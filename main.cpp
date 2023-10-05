@@ -31,9 +31,13 @@ Data readFile(const std::string& filename) {
     }
 
     data.c.resize(data.n, std::vector<int>(data.n));
-    for(int i = 0; i < data.n; ++i) {
-        for(int j = 0; j < data.n; ++j) {
+    // std::cout << "printing n: " << data.n << std::endl;
+    for(int i = 0; i < (data.n + 1); ++i) {
+        // std::cout << "printing i: " << i << std::endl;
+        for(int j = 0; j < (data.n + 1); ++j) {
+            // std::cout << "printing j: " << j << std::endl;
             file >> data.c[i][j];
+            std::cout << "data.c[" << i << "][" << j << "]: " <<  data.c[i][j] << std::endl;
         }
     }
 
@@ -58,9 +62,9 @@ int main() {
     }
 
     std::cout << std::endl << "\nc: " << std::endl;
-    for(const auto &row : data.c) {
-        for(int elem : row) {
-            std::cout << elem << " ";
+    for(int i = 0; i < (data.n + 1); i++) {
+        for(int j = 0; j < (data.n + 1); j++) {
+            std::cout << data.c[i][j] << " ";
         }
         std::cout << std::endl;
     }
