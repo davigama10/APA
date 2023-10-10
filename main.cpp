@@ -20,6 +20,7 @@ struct Data {
 
 struct Solution {
     std::vector<std::vector<int>> rotaPorVeiculo;
+    std::vector<int> terceirizados;
     int total_cost;
 };
 
@@ -94,32 +95,64 @@ Solution greedy_solution(Data& data) {
 
                 if (it == posicoesPercorridas.end()) {
                     std::cout << "nao achou: " << j << std::endl;
-                    std::cout << "posicoesVeiculos[veiculoAtual]: " << posicoesVeiculos[veiculoAtual] << std::endl;
-                    std::cout << "data.c[posicoesVeiculos[veiculoAtual]][j]: " << data.c[posicoesVeiculos[veiculoAtual]][j] << std::endl;
-                    std::cout << "pesosPorVeiculos[veiculoAtual]: " << pesosPorVeiculos[veiculoAtual] << std::endl;
-                    std::cout << "data.d[jMaisPerto - 1]: " << data.d[j - 1] << std::endl;
-                    std::cout << "data.Q: " << data.Q << std::endl;
+                    // std::cout << "posicoesVeiculos[veiculoAtual]: " << posicoesVeiculos[veiculoAtual] << std::endl;
+                    // std::cout << "data.c[posicoesVeiculos[veiculoAtual]][j]: " << data.c[posicoesVeiculos[veiculoAtual]][j] << std::endl;
+                    // std::cout << "pesosPorVeiculos[veiculoAtual]: " << pesosPorVeiculos[veiculoAtual] << std::endl;
+                    // std::cout << "data.d[jMaisPerto - 1]: " << data.d[j - 1] << std::endl;
+                    // std::cout << "data.Q: " << data.Q << std::endl;
                     if (data.c[posicoesVeiculos[veiculoAtual]][j] < distanciaJMaisPerto && data.c[posicoesVeiculos[veiculoAtual]][j] != 0 && ((pesosPorVeiculos[veiculoAtual] + data.d[j - 1]) <= data.Q)) {
-                        std::cout << "entrou no: " << j << std::endl;
                         distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][j];
                         std::cout << "distancia: " << distanciaJMaisPerto << std::endl;
                         distanciaAtualizada = true;
+                        std::cout << "j mais perto: " << j << std::endl;
                         jMaisPerto = j;
                     }
                 }
             }
-        } 
-
-        if (distanciaAtualizada == false) {
-            distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][0];
         }
 
-        if (!solution.rotaPorVeiculo[veiculoAtual].empty()) {
-            if (solution.rotaPorVeiculo[veiculoAtual].back() != 0) {
+        if (distanciaAtualizada && (distanciaJMaisPerto >= data.p[jMaisPerto - 1])) {
+            solution.terceirizados.push_back(jMaisPerto);
+            posicoesPercorridas.push_back(jMaisPerto);
+            std::cout << "terceirizando o item: " << jMaisPerto << " pois data.p[jMaisPerto] = " << data.p[jMaisPerto - 1] << " e distanciaJMaisPerto = " << distanciaJMaisPerto << std::endl;
+        } else {
+            if (distanciaAtualizada == false) {
+                distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][0];
+            }
+
+            if (!solution.rotaPorVeiculo[veiculoAtual].empty()) {
+                if (solution.rotaPorVeiculo[veiculoAtual].back() != 0) {
+                    std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
+
+                    solution.rotaPorVeiculo[veiculoAtual].push_back(jMaisPerto);
+                    
+                    if (jMaisPerto > 0) {
+                        pesosPorVeiculos[veiculoAtual] += data.d[jMaisPerto-1];
+                    }
+
+                    posicoesPercorridas.push_back(jMaisPerto);
+
+                    std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
+
+                    std::cout << "nova rota: " << std::endl;
+                    for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
+                        std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
+                    }
+                    std::cout << std::endl;
+
+                    posicoesVeiculos[veiculoAtual] = jMaisPerto;
+                    std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
+
+                    std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
+
+                    std::cout << "adicionando1 " << distanciaJMaisPerto << std::endl;
+                    solution.total_cost += int(distanciaJMaisPerto);
+                }
+            } else {
                 std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
 
                 solution.rotaPorVeiculo[veiculoAtual].push_back(jMaisPerto);
-                
+
                 if (jMaisPerto > 0) {
                     pesosPorVeiculos[veiculoAtual] += data.d[jMaisPerto-1];
                 }
@@ -142,32 +175,6 @@ Solution greedy_solution(Data& data) {
                 std::cout << "adicionando1 " << distanciaJMaisPerto << std::endl;
                 solution.total_cost += int(distanciaJMaisPerto);
             }
-        } else {
-            std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
-
-            solution.rotaPorVeiculo[veiculoAtual].push_back(jMaisPerto);
-
-            if (jMaisPerto > 0) {
-                pesosPorVeiculos[veiculoAtual] += data.d[jMaisPerto-1];
-            }
-
-            posicoesPercorridas.push_back(jMaisPerto);
-
-            std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
-
-            std::cout << "nova rota: " << std::endl;
-            for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
-                std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
-            }
-            std::cout << std::endl;
-
-            posicoesVeiculos[veiculoAtual] = jMaisPerto;
-            std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
-
-            std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
-
-            std::cout << "adicionando1 " << distanciaJMaisPerto << std::endl;
-            solution.total_cost += int(distanciaJMaisPerto);
         }
 
         // int temp = 0;
@@ -201,6 +208,12 @@ void printSolution(const Solution& sol) {
         }
         std::cout << "\n";
     }
+
+    std::cout << "Terceirizados: ";
+    for(int t : sol.terceirizados) {
+        std::cout << t << " ";
+    }
+    std::cout << "\n";
 }
 
 int main() {
