@@ -2,11 +2,25 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <algorithm>
+#include <numeric>
+
+bool areAllZeroes(const std::vector<int>& v) {
+    return std::all_of(v.begin(), v.end(), [](int i) {
+        return i == 0;
+    });
+}
+
 
 struct Data {
     int n, k, Q, L, r;
     std::vector<int> d, p;
     std::vector<std::vector<int>> c;
+};
+
+struct Solution {
+    std::vector<std::vector<int>> rotaPorVeiculo;
+    int total_cost;
 };
 
 Data readFile(const std::string& filename) {
@@ -30,18 +44,163 @@ Data readFile(const std::string& filename) {
         file >> data.p[i];
     }
 
-    data.c.resize(data.n, std::vector<int>(data.n));
+    data.c.resize(data.n + 1, std::vector<int>(data.n + 1));
     // std::cout << "printing n: " << data.n << std::endl;
     for(int i = 0; i < (data.n + 1); ++i) {
         // std::cout << "printing i: " << i << std::endl;
         for(int j = 0; j < (data.n + 1); ++j) {
             // std::cout << "printing j: " << j << std::endl;
             file >> data.c[i][j];
-            std::cout << "data.c[" << i << "][" << j << "]: " <<  data.c[i][j] << std::endl;
+            // std::cout << "data.c[" << i << "][" << j << "]: " <<  data.c[i][j] << std::endl;
         }
     }
 
     return data;
+}
+
+Solution greedy_solution(Data& data) {
+    Solution solution;
+    solution.total_cost = 0;
+
+    int veiculoAtual = 0;
+    std::vector<int> posicoesVeiculos(data.k, 0);
+    std::vector<int> pesosPorVeiculos(data.k, 0);
+    std::vector<int> posicoesPercorridas;
+
+    for(int i = 0; i < data.k; ++i) {
+        solution.rotaPorVeiculo.push_back(std::vector<int>());
+    }
+
+    while (true) {
+        std::cout << "Veiculo: " << veiculoAtual << std::endl;
+
+        int jMaisPerto = 0;
+        int distanciaJMaisPerto = 99999;
+        bool distanciaAtualizada = false;
+
+        if (pesosPorVeiculos[veiculoAtual] < data.Q) {
+            for(int j = 1; j <= data.n; j++) {
+
+                auto it = std::find(posicoesPercorridas.begin(), posicoesPercorridas.end(), j);
+                
+                std::cout << "Positions traversed: ";
+                for(int pos : posicoesPercorridas) {
+                    std::cout << pos << " ";
+                }
+
+                // Print a newline at the end
+                std::cout << std::endl;
+                std::cout << "procurando: " << j << std::endl;
+
+                if (it == posicoesPercorridas.end()) {
+                    std::cout << "nao achou: " << j << std::endl;
+                    std::cout << "posicoesVeiculos[veiculoAtual]: " << posicoesVeiculos[veiculoAtual] << std::endl;
+                    std::cout << "data.c[posicoesVeiculos[veiculoAtual]][j]: " << data.c[posicoesVeiculos[veiculoAtual]][j] << std::endl;
+                    std::cout << "pesosPorVeiculos[veiculoAtual]: " << pesosPorVeiculos[veiculoAtual] << std::endl;
+                    std::cout << "data.d[jMaisPerto - 1]: " << data.d[j - 1] << std::endl;
+                    std::cout << "data.Q: " << data.Q << std::endl;
+                    if (data.c[posicoesVeiculos[veiculoAtual]][j] < distanciaJMaisPerto && data.c[posicoesVeiculos[veiculoAtual]][j] != 0 && ((pesosPorVeiculos[veiculoAtual] + data.d[j - 1]) <= data.Q)) {
+                        std::cout << "entrou no: " << j << std::endl;
+                        distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][j];
+                        std::cout << "distancia: " << distanciaJMaisPerto << std::endl;
+                        distanciaAtualizada = true;
+                        jMaisPerto = j;
+                    }
+                }
+            }
+        } 
+
+        if (distanciaAtualizada == false) {
+            distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][0];
+        }
+
+        if (!solution.rotaPorVeiculo[veiculoAtual].empty()) {
+            if (solution.rotaPorVeiculo[veiculoAtual].back() != 0) {
+                std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
+
+                solution.rotaPorVeiculo[veiculoAtual].push_back(jMaisPerto);
+                
+                if (jMaisPerto > 0) {
+                    pesosPorVeiculos[veiculoAtual] += data.d[jMaisPerto-1];
+                }
+
+                posicoesPercorridas.push_back(jMaisPerto);
+
+                std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
+
+                std::cout << "nova rota: " << std::endl;
+                for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
+                    std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
+                }
+                std::cout << std::endl;
+
+                posicoesVeiculos[veiculoAtual] = jMaisPerto;
+                std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
+
+                std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
+
+                std::cout << "adicionando1 " << distanciaJMaisPerto << std::endl;
+                solution.total_cost += int(distanciaJMaisPerto);
+            }
+        } else {
+            std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
+
+            solution.rotaPorVeiculo[veiculoAtual].push_back(jMaisPerto);
+
+            if (jMaisPerto > 0) {
+                pesosPorVeiculos[veiculoAtual] += data.d[jMaisPerto-1];
+            }
+
+            posicoesPercorridas.push_back(jMaisPerto);
+
+            std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
+
+            std::cout << "nova rota: " << std::endl;
+            for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
+                std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
+            }
+            std::cout << std::endl;
+
+            posicoesVeiculos[veiculoAtual] = jMaisPerto;
+            std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
+
+            std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
+
+            std::cout << "adicionando1 " << distanciaJMaisPerto << std::endl;
+            solution.total_cost += int(distanciaJMaisPerto);
+        }
+
+        // int temp = 0;
+        // std::cin >> temp;
+
+        std::cout << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
+
+        if(areAllZeroes(posicoesVeiculos)) {
+            return solution;
+        }
+
+        if (veiculoAtual < data.k - 1) {
+            veiculoAtual++;
+        } else {
+            veiculoAtual = 0;
+        }
+    }
+
+    return solution;
+}
+
+void printSolution(const Solution& sol) {
+    std::cout << "Solution: \n";
+    std::cout << "Total Cost: " << sol.total_cost << "\n";
+    std::cout << "Routes per Vehicle: \n";
+
+    for(size_t i = 0; i < sol.rotaPorVeiculo.size(); ++i) {
+        std::cout << "Vehicle " << i << ": ";
+        for(int pos : sol.rotaPorVeiculo[i]) {
+            std::cout << pos << " ";
+        }
+        std::cout << "\n";
+    }
 }
 
 int main() {
@@ -68,6 +227,10 @@ int main() {
         }
         std::cout << std::endl;
     }
+
+    Solution solution = greedy_solution(data);
+
+    printSolution(solution);
 
     return 0;
 }
