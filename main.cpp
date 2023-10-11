@@ -19,9 +19,15 @@ struct Data {
 };
 
 struct Solution {
-    std::vector<std::vector<int>> rotaPorVeiculo;
+    int custoTotal;
+    int custoRoteamento;
+    int custoUtilizacaoVeiculos;
+    int custoTerceirizacao;
+
     std::vector<int> terceirizados;
-    int total_cost;
+
+    int numeroDeRotas;
+    std::vector<std::vector<int>> rotaPorVeiculo;
 };
 
 Data readFile(const std::string& filename) {
@@ -61,7 +67,7 @@ Data readFile(const std::string& filename) {
 
 Solution greedy_solution(Data& data) {
     Solution solution;
-    solution.total_cost = 0;
+    solution.custoTotal = 0;
 
     int veiculoAtual = 0;
     std::vector<int> posicoesVeiculos(data.k, 0);
@@ -89,17 +95,11 @@ Solution greedy_solution(Data& data) {
                     std::cout << pos << " ";
                 }
 
-                // Print a newline at the end
                 std::cout << std::endl;
                 std::cout << "procurando: " << j << std::endl;
 
                 if (it == posicoesPercorridas.end()) {
                     std::cout << "nao achou: " << j << std::endl;
-                    // std::cout << "posicoesVeiculos[veiculoAtual]: " << posicoesVeiculos[veiculoAtual] << std::endl;
-                    // std::cout << "data.c[posicoesVeiculos[veiculoAtual]][j]: " << data.c[posicoesVeiculos[veiculoAtual]][j] << std::endl;
-                    // std::cout << "pesosPorVeiculos[veiculoAtual]: " << pesosPorVeiculos[veiculoAtual] << std::endl;
-                    // std::cout << "data.d[jMaisPerto - 1]: " << data.d[j - 1] << std::endl;
-                    // std::cout << "data.Q: " << data.Q << std::endl;
                     if (data.c[posicoesVeiculos[veiculoAtual]][j] < distanciaJMaisPerto && data.c[posicoesVeiculos[veiculoAtual]][j] != 0 && ((pesosPorVeiculos[veiculoAtual] + data.d[j - 1]) <= data.Q)) {
                         distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][j];
                         std::cout << "distancia: " << distanciaJMaisPerto << std::endl;
@@ -113,6 +113,8 @@ Solution greedy_solution(Data& data) {
 
         if (distanciaAtualizada && (distanciaJMaisPerto >= data.p[jMaisPerto - 1])) {
             solution.terceirizados.push_back(jMaisPerto);
+            solution.custoTerceirizacao += data.p[jMaisPerto - 1];
+            solution.custoTotal += data.p[jMaisPerto - 1];
             posicoesPercorridas.push_back(jMaisPerto);
             std::cout << "terceirizando o item: " << jMaisPerto << " pois data.p[jMaisPerto] = " << data.p[jMaisPerto - 1] << " e distanciaJMaisPerto = " << distanciaJMaisPerto << std::endl;
         } else {
@@ -130,6 +132,8 @@ Solution greedy_solution(Data& data) {
                         pesosPorVeiculos[veiculoAtual] += data.d[jMaisPerto-1];
                     }
 
+                    solution.custoRoteamento += distanciaJMaisPerto;
+
                     posicoesPercorridas.push_back(jMaisPerto);
 
                     std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
@@ -145,8 +149,8 @@ Solution greedy_solution(Data& data) {
 
                     std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
 
-                    std::cout << "adicionando1 " << distanciaJMaisPerto << std::endl;
-                    solution.total_cost += int(distanciaJMaisPerto);
+                    std::cout << "adicionando " << distanciaJMaisPerto << std::endl;
+                    solution.custoTotal += distanciaJMaisPerto;
                 }
             } else {
                 std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
@@ -156,6 +160,11 @@ Solution greedy_solution(Data& data) {
                 if (jMaisPerto > 0) {
                     pesosPorVeiculos[veiculoAtual] += data.d[jMaisPerto-1];
                 }
+
+                solution.custoRoteamento += distanciaJMaisPerto;
+                solution.custoUtilizacaoVeiculos += data.r;
+                solution.custoTotal += data.r;
+                solution.numeroDeRotas += 1;
 
                 posicoesPercorridas.push_back(jMaisPerto);
 
@@ -172,8 +181,8 @@ Solution greedy_solution(Data& data) {
 
                 std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
 
-                std::cout << "adicionando1 " << distanciaJMaisPerto << std::endl;
-                solution.total_cost += int(distanciaJMaisPerto);
+                std::cout << "adicionando " << distanciaJMaisPerto << std::endl;
+                solution.custoTotal += distanciaJMaisPerto;
             }
         }
 
@@ -197,12 +206,17 @@ Solution greedy_solution(Data& data) {
 }
 
 void printSolution(const Solution& sol) {
-    std::cout << "Solution: \n";
-    std::cout << "Total Cost: " << sol.total_cost << "\n";
-    std::cout << "Routes per Vehicle: \n";
+    std::cout << "Solução: \n";
+    std::cout << "Custo Total: " << sol.custoTotal << "\n";
+    std::cout << "Custo de Roteamento: " << sol.custoRoteamento << "\n";
+    std::cout << "Custo de Utilização de Veículos: " << sol.custoUtilizacaoVeiculos << "\n";
+    std::cout << "Custo de Terceirização: " << sol.custoTerceirizacao << "\n";
 
+    std::cout << "Número de Rotas: " << sol.numeroDeRotas << "\n";
+
+    std::cout << "Rotas por Veículo: \n";
     for(size_t i = 0; i < sol.rotaPorVeiculo.size(); ++i) {
-        std::cout << "Vehicle " << i << ": ";
+        std::cout << "Veículo " << i << ": ";
         for(int pos : sol.rotaPorVeiculo[i]) {
             std::cout << pos << " ";
         }
