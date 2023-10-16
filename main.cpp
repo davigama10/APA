@@ -11,7 +11,6 @@ bool areAllZeroes(const std::vector<int>& v) {
     });
 }
 
-
 struct Data {
     int n, k, Q, L, r;
     std::vector<int> d, p;
@@ -30,39 +29,91 @@ struct Solution {
     std::vector<std::vector<int>> rotaPorVeiculo;
 };
 
-Data readFile(const std::string& filename) {
-    std::ifstream file(filename); 
-    if(!file) {
-        std::cerr << "Could not open the file!" << std::endl;
-        exit(EXIT_FAILURE); // Exiting because we can't return any meaningful data
+struct Rota {
+    int custo = 0;
+    std::vector<int> lugaresDisponiveis;
+    std::vector<int> lugaresPercorridos;
+};
+
+struct Solution_2 {
+    int custoTotal;
+    int custoRoteamento;
+    int custoUtilizacaoVeiculos;
+    int custoTerceirizacao;
+
+    std::vector<int> terceirizados;
+
+    int numeroDeRotas;
+    std::vector<Rota> rotas;
+};
+
+void printRota(const Rota& rota) {
+    std::cout << "Detalhes da Rota: \n";
+    std::cout << "Custo: " << rota.custo << "\n";
+
+    std::cout << "Lugares Disponíveis: ";
+    for(int lugar : rota.lugaresDisponiveis) {
+        std::cout << lugar << " ";
     }
+    std::cout << "\n";
 
-    Data data;
-
-    file >> data.n >> data.k >> data.Q >> data.L >> data.r;
-
-    data.d.resize(data.n);
-    for(int i = 0; i < data.n; ++i) {
-        file >> data.d[i];
+    std::cout << "Lugares Percorridos: ";
+    for(int lugar : rota.lugaresPercorridos) {
+        std::cout << lugar << " ";
     }
+    std::cout << "\n";
+}
 
-    data.p.resize(data.n);
-    for(int i = 0; i < data.n; ++i) {
-        file >> data.p[i];
+void removeByValue(Rota& rota, int value) {
+    auto it = std::find(rota.lugaresDisponiveis.begin(), rota.lugaresDisponiveis.end(), value);
+    if (it != rota.lugaresDisponiveis.end()) {
+        rota.lugaresDisponiveis.erase(it);
+    } else {
+        std::cerr << "Erro: Valor não encontrado!" << std::endl;
     }
+}
 
-    data.c.resize(data.n + 1, std::vector<int>(data.n + 1));
-    // std::cout << "printing n: " << data.n << std::endl;
-    for(int i = 0; i < (data.n + 1); ++i) {
-        // std::cout << "printing i: " << i << std::endl;
-        for(int j = 0; j < (data.n + 1); ++j) {
-            // std::cout << "printing j: " << j << std::endl;
-            file >> data.c[i][j];
-            // std::cout << "data.c[" << i << "][" << j << "]: " <<  data.c[i][j] << std::endl;
+void searchRota(Rota& rota, Data& data, Solution_2& solution) {
+    if (rota.lugaresDisponiveis.empty()) {
+        solution.numeroDeRotas += 1;
+        solution.rotas.push_back(rota);
+        solution.custoRoteamento += rota.custo;
+        solution.custoUtilizacaoVeiculos += data.r;
+        solution.custoTotal += (rota.custo + data.r);
+    } else {
+        for(int i : rota.lugaresDisponiveis) {
+            Rota novaRota = rota;
+
+            int ultimaPos = rota.lugaresPercorridos.back();
+            novaRota.custo += data.c[ultimaPos][i];
+            novaRota.lugaresPercorridos.push_back(i);
+            removeByValue(novaRota, i);
+
+            printRota(novaRota);
+
+            searchRota(novaRota, data, solution);
         }
     }
+}
 
-    return data;
+Solution_2 solution_2(Data& data) {
+    Solution_2 solution;
+    solution.custoTotal = 0;
+
+    int posicaoVeiculo = 0;
+
+    Rota novaRota;
+    novaRota.custo = 0;
+    novaRota.lugaresPercorridos.push_back(0);
+
+    for (int l = 1; l <= data.n; l++) {
+        novaRota.lugaresDisponiveis.push_back(l);
+    }
+
+    searchRota(novaRota, data, solution);
+    // printRota(novaRota);
+
+    return solution;
 }
 
 Solution greedy_solution(Data& data) {
@@ -205,6 +256,42 @@ Solution greedy_solution(Data& data) {
     return solution;
 }
 
+
+Data readFile(const std::string& filename) {
+    std::ifstream file(filename); 
+    if(!file) {
+        std::cerr << "Could not open the file!" << std::endl;
+        exit(EXIT_FAILURE); // Exiting because we can't return any meaningful data
+    }
+
+    Data data;
+
+    file >> data.n >> data.k >> data.Q >> data.L >> data.r;
+
+    data.d.resize(data.n);
+    for(int i = 0; i < data.n; ++i) {
+        file >> data.d[i];
+    }
+
+    data.p.resize(data.n);
+    for(int i = 0; i < data.n; ++i) {
+        file >> data.p[i];
+    }
+
+    data.c.resize(data.n + 1, std::vector<int>(data.n + 1));
+    // std::cout << "printing n: " << data.n << std::endl;
+    for(int i = 0; i < (data.n + 1); ++i) {
+        // std::cout << "printing i: " << i << std::endl;
+        for(int j = 0; j < (data.n + 1); ++j) {
+            // std::cout << "printing j: " << j << std::endl;
+            file >> data.c[i][j];
+            // std::cout << "data.c[" << i << "][" << j << "]: " <<  data.c[i][j] << std::endl;
+        }
+    }
+
+    return data;
+}
+
 void printSolution(const Solution& sol) {
     std::cout << "Solução: \n";
     std::cout << "Custo Total: " << sol.custoTotal << "\n";
@@ -218,6 +305,39 @@ void printSolution(const Solution& sol) {
     for(size_t i = 0; i < sol.rotaPorVeiculo.size(); ++i) {
         std::cout << "Veículo " << i << ": ";
         for(int pos : sol.rotaPorVeiculo[i]) {
+            std::cout << pos << " ";
+        }
+        std::cout << "\n";
+    }
+
+    std::cout << "Terceirizados: ";
+    for(int t : sol.terceirizados) {
+        std::cout << t << " ";
+    }
+    std::cout << "\n";
+}
+
+void printSolution_2(const Solution_2& sol) {
+    std::cout << "Solução: \n";
+    std::cout << "Custo Total: " << sol.custoTotal << "\n";
+    std::cout << "Custo de Roteamento: " << sol.custoRoteamento << "\n";
+    std::cout << "Custo de Utilização de Veículos: " << sol.custoUtilizacaoVeiculos << "\n";
+    std::cout << "Custo de Terceirização: " << sol.custoTerceirizacao << "\n";
+
+    std::cout << "Número de Rotas: " << sol.numeroDeRotas << "\n";
+
+    std::cout << "Rotas: \n";
+    for(size_t i = 0; i < sol.rotas.size(); ++i) {
+        std::cout << "Rota " << (i + 1) << " (Custo: " << sol.rotas[i].custo << "):\n";
+        
+        std::cout << "  Lugares Disponíveis: ";
+        for(int lugar : sol.rotas[i].lugaresDisponiveis) {
+            std::cout << lugar << " ";
+        }
+        std::cout << "\n";
+        
+        std::cout << "  Lugares Percorridos: ";
+        for(int pos : sol.rotas[i].lugaresPercorridos) {
             std::cout << pos << " ";
         }
         std::cout << "\n";
@@ -255,9 +375,9 @@ int main() {
         std::cout << std::endl;
     }
 
-    Solution solution = greedy_solution(data);
+    Solution_2 solution = solution_2(data);
 
-    printSolution(solution);
+    printSolution_2(solution);
 
     return 0;
 }
