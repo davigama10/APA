@@ -35,7 +35,19 @@ struct Rota {
     std::vector<int> lugaresPercorridos;
 };
 
-struct Solution_2 {
+struct Solution_2a {
+    int custoTotal;
+    int custoRoteamento;
+    int custoUtilizacaoVeiculos;
+    int custoTerceirizacao;
+
+    std::vector<int> terceirizados;
+
+    int numeroDeRotas;
+    std::vector<Rota> rotas;
+};
+
+struct Solution_2b {
     int custoTotal;
     int custoRoteamento;
     int custoUtilizacaoVeiculos;
@@ -73,8 +85,14 @@ void removeByValue(Rota& rota, int value) {
     }
 }
 
-void searchRota(Rota& rota, Data& data, Solution_2& solution) {
+void searchRota(Rota& rota, Data& data, Solution_2a& solution) {
     if (rota.lugaresDisponiveis.empty()) {
+
+        int ultimaPos = rota.lugaresPercorridos.back();
+        rota.custo += data.c[ultimaPos][0];
+
+        rota.lugaresPercorridos.push_back(0);
+
         solution.numeroDeRotas += 1;
         solution.rotas.push_back(rota);
         solution.custoRoteamento += rota.custo;
@@ -96,8 +114,8 @@ void searchRota(Rota& rota, Data& data, Solution_2& solution) {
     }
 }
 
-Solution_2 solution_2(Data& data) {
-    Solution_2 solution;
+Solution_2a solution_2(Data& data) {
+    Solution_2a solution;
     solution.custoTotal = 0;
 
     int posicaoVeiculo = 0;
@@ -317,7 +335,7 @@ void printSolution(const Solution& sol) {
     std::cout << "\n";
 }
 
-void printSolution_2(const Solution_2& sol) {
+void printSolution_2(const Solution_2a& sol) {
     std::cout << "Solução: \n";
     std::cout << "Custo Total: " << sol.custoTotal << "\n";
     std::cout << "Custo de Roteamento: " << sol.custoRoteamento << "\n";
@@ -375,7 +393,7 @@ int main() {
         std::cout << std::endl;
     }
 
-    Solution_2 solution = solution_2(data);
+    Solution_2a solution = solution_2(data);
 
     printSolution_2(solution);
 
