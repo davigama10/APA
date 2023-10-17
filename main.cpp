@@ -29,111 +29,6 @@ struct Solution {
     std::vector<std::vector<int>> rotaPorVeiculo;
 };
 
-struct Rota {
-    int custo = 0;
-    std::vector<int> lugaresDisponiveis;
-    std::vector<int> lugaresPercorridos;
-};
-
-struct Solution_2a {
-    int custoTotal;
-    int custoRoteamento;
-    int custoUtilizacaoVeiculos;
-    int custoTerceirizacao;
-
-    std::vector<int> terceirizados;
-
-    int numeroDeRotas;
-    std::vector<Rota> rotas;
-};
-
-struct Solution_2b {
-    int custoTotal;
-    int custoRoteamento;
-    int custoUtilizacaoVeiculos;
-    int custoTerceirizacao;
-
-    std::vector<int> terceirizados;
-
-    int numeroDeRotas;
-    std::vector<Rota> rotas;
-};
-
-void printRota(const Rota& rota) {
-    std::cout << "Detalhes da Rota: \n";
-    std::cout << "Custo: " << rota.custo << "\n";
-
-    std::cout << "Lugares Disponíveis: ";
-    for(int lugar : rota.lugaresDisponiveis) {
-        std::cout << lugar << " ";
-    }
-    std::cout << "\n";
-
-    std::cout << "Lugares Percorridos: ";
-    for(int lugar : rota.lugaresPercorridos) {
-        std::cout << lugar << " ";
-    }
-    std::cout << "\n";
-}
-
-void removeByValue(Rota& rota, int value) {
-    auto it = std::find(rota.lugaresDisponiveis.begin(), rota.lugaresDisponiveis.end(), value);
-    if (it != rota.lugaresDisponiveis.end()) {
-        rota.lugaresDisponiveis.erase(it);
-    } else {
-        std::cerr << "Erro: Valor não encontrado!" << std::endl;
-    }
-}
-
-void searchRota(Rota& rota, Data& data, Solution_2a& solution) {
-    if (rota.lugaresDisponiveis.empty()) {
-
-        int ultimaPos = rota.lugaresPercorridos.back();
-        rota.custo += data.c[ultimaPos][0];
-
-        rota.lugaresPercorridos.push_back(0);
-
-        solution.numeroDeRotas += 1;
-        solution.rotas.push_back(rota);
-        solution.custoRoteamento += rota.custo;
-        solution.custoUtilizacaoVeiculos += data.r;
-        solution.custoTotal += (rota.custo + data.r);
-    } else {
-        for(int i : rota.lugaresDisponiveis) {
-            Rota novaRota = rota;
-
-            int ultimaPos = rota.lugaresPercorridos.back();
-            novaRota.custo += data.c[ultimaPos][i];
-            novaRota.lugaresPercorridos.push_back(i);
-            removeByValue(novaRota, i);
-
-            printRota(novaRota);
-
-            searchRota(novaRota, data, solution);
-        }
-    }
-}
-
-Solution_2a solution_2(Data& data) {
-    Solution_2a solution;
-    solution.custoTotal = 0;
-
-    int posicaoVeiculo = 0;
-
-    Rota novaRota;
-    novaRota.custo = 0;
-    novaRota.lugaresPercorridos.push_back(0);
-
-    for (int l = 1; l <= data.n; l++) {
-        novaRota.lugaresDisponiveis.push_back(l);
-    }
-
-    searchRota(novaRota, data, solution);
-    // printRota(novaRota);
-
-    return solution;
-}
-
 Solution greedy_solution(Data& data) {
     Solution solution;
     solution.custoTotal = 0;
@@ -167,6 +62,7 @@ Solution greedy_solution(Data& data) {
                 std::cout << std::endl;
                 std::cout << "procurando: " << j << std::endl;
 
+                // j atual nao esta em posicoesPercorridas
                 if (it == posicoesPercorridas.end()) {
                     std::cout << "nao achou: " << j << std::endl;
                     if (data.c[posicoesVeiculos[veiculoAtual]][j] < distanciaJMaisPerto && data.c[posicoesVeiculos[veiculoAtual]][j] != 0 && ((pesosPorVeiculos[veiculoAtual] + data.d[j - 1]) <= data.Q)) {
@@ -261,6 +157,16 @@ Solution greedy_solution(Data& data) {
         std::cout << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
 
         if(areAllZeroes(posicoesVeiculos)) {
+            // terceirizando todas posicoes nao percorridas
+            for (int j = 1; j <= data.n; j++) {
+                auto it = std::find(posicoesPercorridas.begin(), posicoesPercorridas.end(), j);
+                if (it == posicoesPercorridas.end()) {
+                    solution.terceirizados.push_back(j);
+                    solution.custoTerceirizacao += data.p[j - 1];
+                    solution.custoTotal += data.p[j - 1];
+                    std::cout << "terceirizando o item não visitado: " << j << " pois data.p[j] = " << data.p[j - 1] << std::endl;
+                }
+            }
             return solution;
         }
 
@@ -270,8 +176,6 @@ Solution greedy_solution(Data& data) {
             veiculoAtual = 0;
         }
     }
-
-    return solution;
 }
 
 
@@ -335,39 +239,6 @@ void printSolution(const Solution& sol) {
     std::cout << "\n";
 }
 
-void printSolution_2(const Solution_2a& sol) {
-    std::cout << "Solução: \n";
-    std::cout << "Custo Total: " << sol.custoTotal << "\n";
-    std::cout << "Custo de Roteamento: " << sol.custoRoteamento << "\n";
-    std::cout << "Custo de Utilização de Veículos: " << sol.custoUtilizacaoVeiculos << "\n";
-    std::cout << "Custo de Terceirização: " << sol.custoTerceirizacao << "\n";
-
-    std::cout << "Número de Rotas: " << sol.numeroDeRotas << "\n";
-
-    std::cout << "Rotas: \n";
-    for(size_t i = 0; i < sol.rotas.size(); ++i) {
-        std::cout << "Rota " << (i + 1) << " (Custo: " << sol.rotas[i].custo << "):\n";
-        
-        std::cout << "  Lugares Disponíveis: ";
-        for(int lugar : sol.rotas[i].lugaresDisponiveis) {
-            std::cout << lugar << " ";
-        }
-        std::cout << "\n";
-        
-        std::cout << "  Lugares Percorridos: ";
-        for(int pos : sol.rotas[i].lugaresPercorridos) {
-            std::cout << pos << " ";
-        }
-        std::cout << "\n";
-    }
-
-    std::cout << "Terceirizados: ";
-    for(int t : sol.terceirizados) {
-        std::cout << t << " ";
-    }
-    std::cout << "\n";
-}
-
 int main() {
     Data data = readFile("input.txt");
 
@@ -393,9 +264,9 @@ int main() {
         std::cout << std::endl;
     }
 
-    Solution_2a solution = solution_2(data);
+    Solution solution = greedy_solution(data);
 
-    printSolution_2(solution);
+    printSolution(solution);
 
     return 0;
 }
