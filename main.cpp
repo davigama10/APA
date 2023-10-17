@@ -187,51 +187,55 @@ Solution greedy_solution(Data& data) {
 Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
     Solution best_solution = initial_solution;
 
+    bool improvement_found = true; // flag para continuar buscando melhorias
+
     // Função auxiliar para calcular o custo da rota
     auto calculate_route_cost = [&data](const std::vector<int>& route) {
         int cost = 0;
 
         for (size_t i = 0; i < route.size() - 1; ++i) {
-            int segment_cost = data.c[route[i]][route[i+1]];
-            cost += segment_cost;
+            cost += data.c[route[i]][route[i+1]];
         }
 
         return cost;
     };
 
+    while (improvement_found) {
+        improvement_found = false; // reseta a flag para cada iteração
 
-    for (size_t v = 0; v < best_solution.rotaPorVeiculo.size(); ++v) {
-        std::vector<int>& current_route = best_solution.rotaPorVeiculo[v];
-        int current_route_cost = calculate_route_cost(current_route);
+        for (size_t v = 0; v < best_solution.rotaPorVeiculo.size(); ++v) {
+            std::vector<int>& current_route = best_solution.rotaPorVeiculo[v];
+            int current_route_cost = calculate_route_cost(current_route);
 
-        std::cout << "Verificando rota do veículo " << v << " com custo inicial: " << current_route_cost << std::endl;
+            std::cout << "Verificando rota do veículo " << v << " com custo inicial: " << current_route_cost << std::endl;
 
-        for (size_t i = 0; i < current_route.size() - 1; ++i) { 
-            for (size_t j = i+1; j < current_route.size() - 1; ++j) {
-                // Troca temporariamente as posições dos itens i e j
-                std::swap(current_route[i], current_route[j]);
-
-                int new_route_cost = calculate_route_cost(current_route);
-
-                std::cout << "Trocando posições " << i << " e " << j << ". Novo custo: " << new_route_cost << std::endl;
-
-                // Se a nova rota é melhor (tem um custo menor), atualiza a solução
-                if (new_route_cost < current_route_cost) {
-                    std::cout << "Nova rota é melhor! Atualizando custo." << std::endl;
-
-                    current_route_cost = new_route_cost;
-                    best_solution.custoRoteamento -= current_route_cost;  // Revisar lógica
-                    best_solution.custoTotal -= current_route_cost;       // Revisar lógica
-
-                } else {
-                    // Desfaz a troca
+            for (size_t i = 0; i < current_route.size() - 1; ++i) { 
+                for (size_t j = i+1; j < current_route.size() - 1; ++j) {
+                    // Troca temporariamente as posições dos itens i e j
                     std::swap(current_route[i], current_route[j]);
+
+                    int new_route_cost = calculate_route_cost(current_route);
+
+                    std::cout << "Trocando posições " << i << " e " << j << ". Novo custo: " << new_route_cost << std::endl;
+
+                    // Se a nova rota é melhor (tem um custo menor), atualiza a solução
+                    if (new_route_cost < current_route_cost) {
+                        std::cout << "Nova rota é melhor! Atualizando custo." << std::endl;
+                        current_route_cost = new_route_cost;
+                        improvement_found = true; // indica que foi encontrada uma melhoria
+                    } else {
+                        // Desfaz a troca
+                        std::swap(current_route[i], current_route[j]);
+                    }
                 }
             }
         }
     }
 
+    best_solution.custoTotal = best_solution.custoRoteamento + best_solution.custoTerceirizacao + best_solution.custoUtilizacaoVeiculos;
+
     std::cout << "Custo da solução final após aplicar a estrutura de vizinhança: " << best_solution.custoTotal << std::endl;
+
     return best_solution;
 }
 
