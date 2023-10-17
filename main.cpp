@@ -190,19 +190,12 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
     // Função auxiliar para calcular o custo da rota
     auto calculate_route_cost = [&data](const std::vector<int>& route) {
         int cost = 0;
-        std::cout << "Calculando custo para a rota: ";
-        for (const int& point : route) {
-            std::cout << point << " -> ";
-        }
-        std::cout << std::endl;
 
         for (size_t i = 0; i < route.size() - 1; ++i) {
             int segment_cost = data.c[route[i]][route[i+1]];
-            std::cout << "Custo do segmento " << route[i] << " -> " << route[i+1] << ": " << segment_cost << std::endl;
             cost += segment_cost;
         }
 
-        std::cout << "Custo total da rota: " << cost << std::endl;
         return cost;
     };
 
@@ -239,6 +232,65 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
     }
 
     std::cout << "Custo da solução final após aplicar a estrutura de vizinhança: " << best_solution.custoTotal << std::endl;
+    return best_solution;
+}
+
+Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial_solution) {
+    Solution best_solution = initial_solution;
+
+    // Função auxiliar para calcular o custo da rota
+    auto calculate_route_cost = [&data](const std::vector<int>& route) {
+        int cost = 0;
+
+        for (size_t i = 0; i < route.size() - 1; ++i) {
+            cost += data.c[route[i]][route[i+1]];
+        }
+        
+        return cost;
+    };
+
+    for (size_t v1 = 0; v1 < best_solution.rotaPorVeiculo.size(); ++v1) {
+        for (size_t v2 = 0; v2 < best_solution.rotaPorVeiculo.size(); ++v2) {
+            if (v1 != v2) { // Evita a comparação da mesma rota
+                for (size_t i = 0; i < best_solution.rotaPorVeiculo[v1].size(); ++i) {
+                    for (size_t j = 0; j < best_solution.rotaPorVeiculo[v2].size(); ++j) {
+                        std::vector<int> current_route1 = best_solution.rotaPorVeiculo[v1];
+                        std::vector<int> current_route2 = best_solution.rotaPorVeiculo[v2];
+
+                        int prev_route1_cost = calculate_route_cost(current_route1);
+                        int prev_route2_cost = calculate_route_cost(current_route2);
+
+                        std::cout << "Verificando troca entre veículo " << v1 << " na posição " << i << " e veículo " << v2 << " na posição " << j << std::endl;
+                        std::cout << "Custos anteriores: Rota1: " << prev_route1_cost << ", Rota2: " << prev_route2_cost << std::endl;
+
+                        // Troca temporariamente os itens entre as rotas
+                        if (current_route1[i] != 0 && current_route2[j] != 0) {
+                            std::swap(current_route1[i], current_route2[j]);
+
+                            int new_route1_cost = calculate_route_cost(current_route1);
+                            int new_route2_cost = calculate_route_cost(current_route2);
+
+                            std::cout << "Novos custos após a troca: Rota1: " << new_route1_cost << ", Rota2: " << new_route2_cost << std::endl;
+
+                            // Se a troca resulta em um custo menor, atualiza a solução
+                            if (new_route1_cost + new_route2_cost < prev_route1_cost + prev_route2_cost) {
+                                std::cout << "A troca melhorou o custo! Atualizando a solução." << std::endl;
+                                best_solution.rotaPorVeiculo[v1] = current_route1;
+                                best_solution.rotaPorVeiculo[v2] = current_route2;
+                                best_solution.custoRoteamento += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
+                                best_solution.custoTotal += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
+                            } else {
+                                std::cout << "A troca não melhorou o custo. Desfazendo." << std::endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << "Custo da solução final após aplicar multi-route swap: " << best_solution.custoTotal << std::endl;
+
     return best_solution;
 }
 
@@ -335,6 +387,12 @@ int main() {
     Solution improved_solution = swap_neighborhood(data, solution);
     std::cout << "\n\n\n\nSolução após vizinhança por troca:" << std::endl;
     printSolution(improved_solution);
+
+    // Integrate the multi_route_swap_neighborhood
+    std::cout << "\n\n\n\n" << std::endl;
+    Solution multi_route_improved_solution = multi_route_swap_neighborhood(data, solution);
+    std::cout << "\n\n\n\nSolução após vizinhança multi-route swap:" << std::endl;
+    printSolution(multi_route_improved_solution);
 
     return 0;
 }
