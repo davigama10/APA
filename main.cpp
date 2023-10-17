@@ -245,7 +245,7 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
         for (size_t i = 0; i < route.size() - 1; ++i) {
             cost += data.c[route[i]][route[i+1]];
         }
-        
+
         return cost;
     };
 
@@ -290,6 +290,89 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
     }
 
     std::cout << "Custo da solução final após aplicar multi-route swap: " << best_solution.custoTotal << std::endl;
+
+    return best_solution;
+}
+
+Solution outsourced_neighborhood(const Data& data, const Solution& initial_solution) {
+    Solution best_solution = initial_solution;
+
+    // Lista de entregas incorporadas à rota
+    std::vector<int> incorporated_deliveries;
+
+    // Função auxiliar para calcular o custo da rota
+    auto calculate_route_cost = [&data](const std::vector<int>& route) {
+        int cost = 0;
+
+        for (size_t i = 0; i < route.size() - 1; ++i) {
+            cost += data.c[route[i]][route[i+1]];
+        }
+        
+        return cost;
+    };
+
+    // Tentar terceirizar as entregas
+    for (size_t v = 0; v < best_solution.rotaPorVeiculo.size(); ++v) {
+        for (size_t i = 0; i < best_solution.rotaPorVeiculo[v].size(); ++i) {
+            int current_location = best_solution.rotaPorVeiculo[v][i];
+
+            // Se o nó é '0', continue para o próximo nó
+            if (current_location == 0) {
+                continue;
+            }
+
+            int route_cost_with_current = calculate_route_cost(best_solution.rotaPorVeiculo[v]);
+            
+            best_solution.rotaPorVeiculo[v].erase(best_solution.rotaPorVeiculo[v].begin() + i);
+            int route_cost_without_current = calculate_route_cost(best_solution.rotaPorVeiculo[v]);
+            
+            // Se a terceirização é mais barata
+            if (route_cost_without_current + data.p[current_location - 1] < route_cost_with_current) {
+                best_solution.terceirizados.push_back(current_location);
+                best_solution.custoTerceirizacao += data.p[current_location - 1];
+                best_solution.custoRoteamento -= route_cost_with_current - route_cost_without_current;
+            } else {
+                // Desfaz a remoção do local
+                best_solution.rotaPorVeiculo[v].insert(best_solution.rotaPorVeiculo[v].begin() + i, current_location);
+            }
+        }
+    }
+
+    // Verificar se as entregas terceirizadas podem ser incorporadas de volta na rota
+    for (int terc : best_solution.terceirizados) {
+        int current_cost_with_terceirized = data.p[terc - 1];
+        
+        int best_route_cost = 999999;
+        size_t best_v = 0;
+
+        for (size_t v = 0; v < best_solution.rotaPorVeiculo.size(); ++v) {
+            std::vector<int> tmp_route = best_solution.rotaPorVeiculo[v];
+            tmp_route.push_back(terc);
+            
+            int route_cost = calculate_route_cost(tmp_route);
+            if (route_cost < best_route_cost) {
+                best_route_cost = route_cost;
+                best_v = v;
+            }
+        }
+
+        // Se incorporar a entrega na rota é mais barato
+        if (best_route_cost < current_cost_with_terceirized) {
+            best_solution.rotaPorVeiculo[best_v].push_back(terc);
+            best_solution.custoTerceirizacao -= data.p[terc - 1];
+            best_solution.custoRoteamento += best_route_cost;
+
+            // Adiciona à lista de entregas incorporadas
+            incorporated_deliveries.push_back(terc);
+        }
+    }
+
+    // Remove as entregas incorporadas da lista de terceirizados
+    for (int delivery : incorporated_deliveries) {
+        best_solution.terceirizados.erase(std::remove(best_solution.terceirizados.begin(), best_solution.terceirizados.end(), delivery), best_solution.terceirizados.end());
+    }
+
+    best_solution.custoTotal = best_solution.custoRoteamento + best_solution.custoTerceirizacao + best_solution.custoUtilizacaoVeiculos;
 
     return best_solution;
 }
@@ -380,7 +463,6 @@ int main() {
     }
 
     Solution solution = greedy_solution(data);
-
     printSolution(solution);
 
     std::cout << "\n\n\n\n" << std::endl;
@@ -394,5 +476,12 @@ int main() {
     std::cout << "\n\n\n\nSolução após vizinhança multi-route swap:" << std::endl;
     printSolution(multi_route_improved_solution);
 
+    // Integrate the outsourced_neighborhood
+    std::cout << "\n\n\n\n" << std::endl;
+    Solution outsourced_improved_solution = outsourced_neighborhood(data, solution);
+    std::cout << "\n\n\n\nSolução após vizinhança por terceirização:" << std::endl;
+    printSolution(outsourced_improved_solution);
+
     return 0;
 }
+
