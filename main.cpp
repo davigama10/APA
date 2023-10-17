@@ -242,6 +242,8 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
 Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial_solution) {
     Solution best_solution = initial_solution;
 
+    bool improvement_found = true; // flag para continuar buscando melhorias
+
     // Função auxiliar para calcular o custo da rota
     auto calculate_route_cost = [&data](const std::vector<int>& route) {
         int cost = 0;
@@ -253,38 +255,43 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
         return cost;
     };
 
-    for (size_t v1 = 0; v1 < best_solution.rotaPorVeiculo.size(); ++v1) {
-        for (size_t v2 = 0; v2 < best_solution.rotaPorVeiculo.size(); ++v2) {
-            if (v1 != v2) { // Evita a comparação da mesma rota
-                for (size_t i = 0; i < best_solution.rotaPorVeiculo[v1].size(); ++i) {
-                    for (size_t j = 0; j < best_solution.rotaPorVeiculo[v2].size(); ++j) {
-                        std::vector<int> current_route1 = best_solution.rotaPorVeiculo[v1];
-                        std::vector<int> current_route2 = best_solution.rotaPorVeiculo[v2];
+    while (improvement_found) {
+        improvement_found = false; // reseta a flag para cada iteração
 
-                        int prev_route1_cost = calculate_route_cost(current_route1);
-                        int prev_route2_cost = calculate_route_cost(current_route2);
+        for (size_t v1 = 0; v1 < best_solution.rotaPorVeiculo.size(); ++v1) {
+            for (size_t v2 = 0; v2 < best_solution.rotaPorVeiculo.size(); ++v2) {
+                if (v1 != v2) { // Evita a comparação da mesma rota
+                    for (size_t i = 0; i < best_solution.rotaPorVeiculo[v1].size(); ++i) {
+                        for (size_t j = 0; j < best_solution.rotaPorVeiculo[v2].size(); ++j) {
+                            std::vector<int> current_route1 = best_solution.rotaPorVeiculo[v1];
+                            std::vector<int> current_route2 = best_solution.rotaPorVeiculo[v2];
 
-                        std::cout << "Verificando troca entre veículo " << v1 << " na posição " << i << " e veículo " << v2 << " na posição " << j << std::endl;
-                        std::cout << "Custos anteriores: Rota1: " << prev_route1_cost << ", Rota2: " << prev_route2_cost << std::endl;
+                            int prev_route1_cost = calculate_route_cost(current_route1);
+                            int prev_route2_cost = calculate_route_cost(current_route2);
 
-                        // Troca temporariamente os itens entre as rotas
-                        if (current_route1[i] != 0 && current_route2[j] != 0) {
-                            std::swap(current_route1[i], current_route2[j]);
+                            std::cout << "Verificando troca entre veículo " << v1 << " na posição " << i << " e veículo " << v2 << " na posição " << j << std::endl;
+                            std::cout << "Custos anteriores: Rota1: " << prev_route1_cost << ", Rota2: " << prev_route2_cost << std::endl;
 
-                            int new_route1_cost = calculate_route_cost(current_route1);
-                            int new_route2_cost = calculate_route_cost(current_route2);
+                            // Troca temporariamente os itens entre as rotas
+                            if (current_route1[i] != 0 && current_route2[j] != 0) {
+                                std::swap(current_route1[i], current_route2[j]);
 
-                            std::cout << "Novos custos após a troca: Rota1: " << new_route1_cost << ", Rota2: " << new_route2_cost << std::endl;
+                                int new_route1_cost = calculate_route_cost(current_route1);
+                                int new_route2_cost = calculate_route_cost(current_route2);
 
-                            // Se a troca resulta em um custo menor, atualiza a solução
-                            if (new_route1_cost + new_route2_cost < prev_route1_cost + prev_route2_cost) {
-                                std::cout << "A troca melhorou o custo! Atualizando a solução." << std::endl;
-                                best_solution.rotaPorVeiculo[v1] = current_route1;
-                                best_solution.rotaPorVeiculo[v2] = current_route2;
-                                best_solution.custoRoteamento += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
-                                best_solution.custoTotal += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
-                            } else {
-                                std::cout << "A troca não melhorou o custo. Desfazendo." << std::endl;
+                                std::cout << "Novos custos após a troca: Rota1: " << new_route1_cost << ", Rota2: " << new_route2_cost << std::endl;
+
+                                // Se a troca resulta em um custo menor, atualiza a solução
+                                if (new_route1_cost + new_route2_cost < prev_route1_cost + prev_route2_cost) {
+                                    std::cout << "A troca melhorou o custo! Atualizando a solução." << std::endl;
+                                    best_solution.rotaPorVeiculo[v1] = current_route1;
+                                    best_solution.rotaPorVeiculo[v2] = current_route2;
+                                    best_solution.custoRoteamento += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
+                                    best_solution.custoTotal += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
+                                    improvement_found = true; // indica que foi encontrada uma melhoria
+                                } else {
+                                    std::cout << "A troca não melhorou o custo. Desfazendo." << std::endl;
+                                }
                             }
                         }
                     }
