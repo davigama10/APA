@@ -43,7 +43,7 @@ Solution greedy_solution(Data& data) {
     }
 
     while (true) {
-        std::cout << "Veiculo: " << veiculoAtual << std::endl;
+        // std::cout << "Veiculo: " << veiculoAtual << std::endl;
 
         int jMaisPerto = 0;
         int distanciaJMaisPerto = 99999;
@@ -54,22 +54,22 @@ Solution greedy_solution(Data& data) {
 
                 auto it = std::find(posicoesPercorridas.begin(), posicoesPercorridas.end(), j);
                 
-                std::cout << "Positions traversed: ";
+                // std::cout << "Positions traversed: ";
                 for(int pos : posicoesPercorridas) {
                     std::cout << pos << " ";
                 }
 
                 std::cout << std::endl;
-                std::cout << "procurando: " << j << std::endl;
+                // std::cout << "procurando: " << j << std::endl;
 
                 // j atual nao esta em posicoesPercorridas
                 if (it == posicoesPercorridas.end()) {
-                    std::cout << "nao achou: " << j << std::endl;
+                    // std::cout << "nao achou: " << j << std::endl;
                     if (data.c[posicoesVeiculos[veiculoAtual]][j] < distanciaJMaisPerto && data.c[posicoesVeiculos[veiculoAtual]][j] != 0 && ((pesosPorVeiculos[veiculoAtual] + data.d[j - 1]) <= data.Q)) {
                         distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][j];
-                        std::cout << "distancia: " << distanciaJMaisPerto << std::endl;
+                        // std::cout << "distancia: " << distanciaJMaisPerto << std::endl;
                         distanciaAtualizada = true;
-                        std::cout << "j mais perto: " << j << std::endl;
+                        // std::cout << "j mais perto: " << j << std::endl;
                         jMaisPerto = j;
                     }
                 }
@@ -81,7 +81,7 @@ Solution greedy_solution(Data& data) {
             solution.custoTerceirizacao += data.p[jMaisPerto - 1];
             solution.custoTotal += data.p[jMaisPerto - 1];
             posicoesPercorridas.push_back(jMaisPerto);
-            std::cout << "terceirizando o item: " << jMaisPerto << " pois data.p[jMaisPerto] = " << data.p[jMaisPerto - 1] << " e distanciaJMaisPerto = " << distanciaJMaisPerto << std::endl;
+            // std::cout << "terceirizando o item: " << jMaisPerto << " pois data.p[jMaisPerto] = " << data.p[jMaisPerto - 1] << " e distanciaJMaisPerto = " << distanciaJMaisPerto << std::endl;
         } else {
             if (distanciaAtualizada == false) {
                 distanciaJMaisPerto = data.c[posicoesVeiculos[veiculoAtual]][0];
@@ -89,7 +89,7 @@ Solution greedy_solution(Data& data) {
 
             if (!solution.rotaPorVeiculo[veiculoAtual].empty()) {
                 if (solution.rotaPorVeiculo[veiculoAtual].back() != 0) {
-                    std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
+                    // std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
 
                     solution.rotaPorVeiculo[veiculoAtual].push_back(jMaisPerto);
                     
@@ -101,24 +101,24 @@ Solution greedy_solution(Data& data) {
 
                     posicoesPercorridas.push_back(jMaisPerto);
 
-                    std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
+                    // std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
 
-                    std::cout << "nova rota: " << std::endl;
+                    // std::cout << "nova rota: " << std::endl;
                     for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
                         std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
                     }
                     std::cout << std::endl;
 
                     posicoesVeiculos[veiculoAtual] = jMaisPerto;
-                    std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
+                    // std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
 
-                    std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
+                    // std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
 
-                    std::cout << "adicionando " << distanciaJMaisPerto << std::endl;
+                    // std::cout << "adicionando " << distanciaJMaisPerto << std::endl;
                     solution.custoTotal += distanciaJMaisPerto;
                 }
             } else {
-                std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
+                // std::cout << "Posicao mais perto: " << jMaisPerto << std::endl;
 
                 solution.rotaPorVeiculo[veiculoAtual].push_back(jMaisPerto);
 
@@ -133,20 +133,20 @@ Solution greedy_solution(Data& data) {
 
                 posicoesPercorridas.push_back(jMaisPerto);
 
-                std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
+                // std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
 
-                std::cout << "nova rota: " << std::endl;
+                // std::cout << "nova rota: " << std::endl;
                 for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
                     std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
                 }
                 std::cout << std::endl;
 
                 posicoesVeiculos[veiculoAtual] = jMaisPerto;
-                std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
+                // std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
 
-                std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
+                // std::cout << "novo peso: " << pesosPorVeiculos[veiculoAtual] << std::endl;
 
-                std::cout << "adicionando " << distanciaJMaisPerto << std::endl;
+                // std::cout << "adicionando " << distanciaJMaisPerto << std::endl;
                 solution.custoTotal += distanciaJMaisPerto;
             }
         }
@@ -170,7 +170,7 @@ Solution greedy_solution(Data& data) {
                     solution.terceirizados.push_back(j);
                     solution.custoTerceirizacao += data.p[j - 1];
                     solution.custoTotal += data.p[j - 1];
-                    std::cout << "terceirizando o item não visitado: " << j << " pois data.p[j] = " << data.p[j - 1] << std::endl;
+                    // std::cout << "terceirizando o item não visitado: " << j << " pois data.p[j] = " << data.p[j - 1] << std::endl;
                 }
             }
             return solution;
@@ -207,7 +207,7 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
             std::vector<int>& current_route = best_solution.rotaPorVeiculo[v];
             int current_route_cost = calculate_route_cost(current_route);
 
-            std::cout << "Verificando rota do veículo " << v << " com custo inicial: " << current_route_cost << std::endl;
+            // std::cout << "Verificando rota do veículo " << v << " com custo inicial: " << current_route_cost << std::endl;
 
             for (size_t i = 0; i < current_route.size() - 1; ++i) { 
                 for (size_t j = i+1; j < current_route.size() - 1; ++j) {
@@ -216,11 +216,11 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
 
                     int new_route_cost = calculate_route_cost(current_route);
 
-                    std::cout << "Trocando posições " << i << " e " << j << ". Novo custo: " << new_route_cost << std::endl;
+                    // std::cout << "Trocando posições " << i << " e " << j << ". Novo custo: " << new_route_cost << std::endl;
 
                     // Se a nova rota é melhor (tem um custo menor), atualiza a solução
                     if (new_route_cost < current_route_cost) {
-                        std::cout << "Nova rota é melhor! Atualizando custo." << std::endl;
+                        // std::cout << "Nova rota é melhor! Atualizando custo." << std::endl;
                         current_route_cost = new_route_cost;
                         improvement_found = true; // indica que foi encontrada uma melhoria
                     } else {
@@ -234,7 +234,7 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
 
     best_solution.custoTotal = best_solution.custoRoteamento + best_solution.custoTerceirizacao + best_solution.custoUtilizacaoVeiculos;
 
-    std::cout << "Custo da solução final após aplicar a estrutura de vizinhança: " << best_solution.custoTotal << std::endl;
+    // std::cout << "Custo da solução final após aplicar a estrutura de vizinhança: " << best_solution.custoTotal << std::endl;
 
     return best_solution;
 }
@@ -269,8 +269,8 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
                             int prev_route1_cost = calculate_route_cost(current_route1);
                             int prev_route2_cost = calculate_route_cost(current_route2);
 
-                            std::cout << "Verificando troca entre veículo " << v1 << " na posição " << i << " e veículo " << v2 << " na posição " << j << std::endl;
-                            std::cout << "Custos anteriores: Rota1: " << prev_route1_cost << ", Rota2: " << prev_route2_cost << std::endl;
+                            // std::cout << "Verificando troca entre veículo " << v1 << " na posição " << i << " e veículo " << v2 << " na posição " << j << std::endl;
+                            // std::cout << "Custos anteriores: Rota1: " << prev_route1_cost << ", Rota2: " << prev_route2_cost << std::endl;
 
                             // Troca temporariamente os itens entre as rotas
                             if (current_route1[i] != 0 && current_route2[j] != 0) {
@@ -279,18 +279,18 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
                                 int new_route1_cost = calculate_route_cost(current_route1);
                                 int new_route2_cost = calculate_route_cost(current_route2);
 
-                                std::cout << "Novos custos após a troca: Rota1: " << new_route1_cost << ", Rota2: " << new_route2_cost << std::endl;
+                                // std::cout << "Novos custos após a troca: Rota1: " << new_route1_cost << ", Rota2: " << new_route2_cost << std::endl;
 
                                 // Se a troca resulta em um custo menor, atualiza a solução
                                 if (new_route1_cost + new_route2_cost < prev_route1_cost + prev_route2_cost) {
-                                    std::cout << "A troca melhorou o custo! Atualizando a solução." << std::endl;
+                                    // std::cout << "A troca melhorou o custo! Atualizando a solução." << std::endl;
                                     best_solution.rotaPorVeiculo[v1] = current_route1;
                                     best_solution.rotaPorVeiculo[v2] = current_route2;
                                     best_solution.custoRoteamento += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
                                     best_solution.custoTotal += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
                                     improvement_found = true; // indica que foi encontrada uma melhoria
                                 } else {
-                                    std::cout << "A troca não melhorou o custo. Desfazendo." << std::endl;
+                                    // std::cout << "A troca não melhorou o custo. Desfazendo." << std::endl;
                                 }
                             }
                         }
@@ -300,7 +300,7 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
         }
     }
 
-    std::cout << "Custo da solução final após aplicar multi-route swap: " << best_solution.custoTotal << std::endl;
+    // std::cout << "Custo da solução final após aplicar multi-route swap: " << best_solution.custoTotal << std::endl;
 
     return best_solution;
 }
@@ -388,6 +388,45 @@ Solution outsourced_neighborhood(const Data& data, const Solution& initial_solut
     return best_solution;
 }
 
+Solution vnd(const Data& data, Solution initial_solution) {
+    Solution best_solution = initial_solution;
+    Solution current_solution = initial_solution;
+    
+    int k = 0;
+    while (k < 3) {
+        std::cout << "Current neighborhood index: " << k << std::endl;
+        switch(k) {
+            case 0:
+                std::cout << "Applying swap_neighborhood..." << std::endl;
+                current_solution = swap_neighborhood(data, current_solution);
+                std::cout << "New total cost after swap_neighborhood: " << current_solution.custoTotal << std::endl;
+                break;
+            case 1:
+                std::cout << "Applying multi_route_swap_neighborhood..." << std::endl;
+                current_solution = multi_route_swap_neighborhood(data, current_solution);
+                std::cout << "New total cost after multi_route_swap_neighborhood: " << current_solution.custoTotal << std::endl;
+                break;
+            case 2:
+                std::cout << "Applying outsourced_neighborhood..." << std::endl;
+                current_solution = outsourced_neighborhood(data, current_solution);
+                std::cout << "New total cost after outsourced_neighborhood: " << current_solution.custoTotal << std::endl;
+                break;
+        }
+
+        if (current_solution.custoTotal < best_solution.custoTotal) {
+            std::cout << "Found a better solution! Updating best_solution and resetting neighborhood index." << std::endl;
+            best_solution = current_solution;
+            k = 0; // reinicia o índice da vizinhança se houver melhora
+        } else {
+            std::cout << "No improvement found. Moving to the next neighborhood." << std::endl;
+            ++k; // vai para a próxima vizinhança
+        }
+    }
+
+    std::cout << "VND finished. Best solution cost: " << best_solution.custoTotal << std::endl;
+    return best_solution;
+}
+
 Data readFile(const std::string& filename) {
     std::ifstream file(filename); 
     if(!file) {
@@ -449,7 +488,7 @@ void printSolution(const Solution& sol) {
 }
 
 int main() {
-    Data data = readFile("input.txt");
+    Data data = readFile("input2.txt");
 
     // Output the variables and arrays/matrices to verify they were read correctly
     std::cout << "n: " << data.n << "\nk: " << data.k << "\nQ: " << data.Q 
@@ -493,6 +532,9 @@ int main() {
     std::cout << "\n\n\n\nSolução após vizinhança por terceirização:" << std::endl;
     printSolution(outsourced_improved_solution);
 
+    Solution vnd_solution = vnd(data, solution);
+    std::cout << "\n\n\n\nSolução após VND:" << std::endl;
+    printSolution(vnd_solution);
+
     return 0;
 }
-
