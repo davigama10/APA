@@ -58,11 +58,11 @@ Solution greedy_solution(Data& data) {
                 auto it = std::find(posicoesPercorridas.begin(), posicoesPercorridas.end(), j);
                 
                 // std::cout << "Positions traversed: ";
-                for(int pos : posicoesPercorridas) {
-                    std::cout << pos << " ";
-                }
+                // for(int pos : posicoesPercorridas) {
+                //     std::cout << pos << " ";
+                // }
 
-                std::cout << std::endl;
+                // std::cout << std::endl;
                 // std::cout << "procurando: " << j << std::endl;
 
                 // j atual nao esta em posicoesPercorridas
@@ -107,10 +107,10 @@ Solution greedy_solution(Data& data) {
                     // std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
 
                     // std::cout << "nova rota: " << std::endl;
-                    for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
-                        std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
-                    }
-                    std::cout << std::endl;
+                    // for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
+                    //     std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
+                    // }
+                    // std::cout << std::endl;
 
                     posicoesVeiculos[veiculoAtual] = jMaisPerto;
                     // std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
@@ -139,10 +139,10 @@ Solution greedy_solution(Data& data) {
                 // std::cout << "adicionando a rota: " << jMaisPerto << std::endl;
 
                 // std::cout << "nova rota: " << std::endl;
-                for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
-                    std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
-                }
-                std::cout << std::endl;
+                // for(int x = 0; x < solution.rotaPorVeiculo[veiculoAtual].size(); x++) {
+                //     std::cout << solution.rotaPorVeiculo[veiculoAtual][x] << " ";
+                // }
+                // std::cout << std::endl;
 
                 posicoesVeiculos[veiculoAtual] = jMaisPerto;
                 // std::cout << "posicoesVeiculos[veiculoAtual] (adicionando): " << posicoesVeiculos[veiculoAtual] << std::endl;
@@ -157,7 +157,7 @@ Solution greedy_solution(Data& data) {
         // int temp = 0;
         // std::cin >> temp;
 
-        std::cout << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
+        // std::cout << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
 
         if(areAllZeroes(posicoesVeiculos)) {
             for(auto &rota : solution.rotaPorVeiculo) {
@@ -511,6 +511,31 @@ void printSolution(const Solution& sol) {
     std::cout << "\n";
 }
 
+void saveSolutionToFile(const Solution& sol, const std::string& filename) {
+    std::ofstream outfile(filename);
+
+    // Write the solution details to the file
+    outfile << sol.custoTotal << "\n";
+    outfile << sol.custoRoteamento << "\n";
+    outfile << sol.custoUtilizacaoVeiculos << "\n";
+    outfile << sol.custoTerceirizacao << "\n\n";
+
+    for(int t : sol.terceirizados) {
+        outfile << t << " ";
+    }
+    outfile << "\n\n";
+
+    outfile << sol.numeroDeRotas << "\n";
+    for(size_t i = 0; i < sol.rotaPorVeiculo.size(); ++i) {
+        for(int pos : sol.rotaPorVeiculo[i]) {
+            outfile << pos << " ";
+        }
+        outfile << "\n";
+    }
+
+    outfile.close();
+}
+
 int main() {
     // Define the directory containing the input files
     std::string directory_path = "./instancias";
@@ -531,59 +556,49 @@ int main() {
             continue;
         }
 
+        // Debugging line, remove in final code
+        // if (filename != "n9k5_A.txt") {
+        //     continue;
+        // }
+
         std::cout << "Processing file: " << path << std::endl;
 
         // Read data from file
         Data data = readFile(path.string());
 
-        // Output the variables and arrays/matrices to verify they were read correctly
-        std::cout << "n: " << data.n << "\nk: " << data.k << "\nQ: " << data.Q 
-                << "\nL: " << data.L << "\nr: " << data.r << std::endl;
+        std::string baseFilename = filename.substr(0, filename.find(".txt"));  // Remove .txt from filename
+        std::string outputPath = "./output/";  // Define the output directory
 
-        std::cout << "\nd: ";
-        for(int i : data.d) {
-            std::cout << i << " ";
-        }
-
-        std::cout << "\np: ";
-        for(int i : data.p) {
-            std::cout << i << " ";
-        }
-
-        std::cout << std::endl << "\nc: " << std::endl;
-        for(int i = 0; i < (data.n + 1); i++) {
-            for(int j = 0; j < (data.n + 1); j++) {
-                std::cout << data.c[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }
-
-        // Apply algorithms and print solutions
         Solution solution = greedy_solution(data);
         printSolution(solution);
+        saveSolutionToFile(solution, outputPath + baseFilename + "_greedy_solution.txt");  // Save the greedy solution
 
-        std::cout << "\n\n\n\nEntrando vizinhança por troca:" << std::endl;
+        std::cout << "\n\n\n\nEntering swap neighborhood:" << std::endl;
         Solution improved_solution = swap_neighborhood(data, solution);
-        std::cout << "\n\n\n\nSolução após vizinhança por troca:" << std::endl;
+        std::cout << "\n\n\n\nSolution after swap neighborhood:" << std::endl;
         printSolution(improved_solution);
+        saveSolutionToFile(improved_solution, outputPath + baseFilename + "_swap_neighborhood_solution.txt");  // Save after swap neighborhood
 
         // Integrate the multi_route_swap_neighborhood
         Solution multi_route_improved_solution = multi_route_swap_neighborhood(data, solution);
-        std::cout << "\n\n\n\nSolução após vizinhança multi-route swap:" << std::endl;
+        std::cout << "\n\n\n\nSolution after multi-route swap neighborhood:" << std::endl;
         printSolution(multi_route_improved_solution);
+        saveSolutionToFile(multi_route_improved_solution, outputPath + baseFilename + "_multi_route_swap_solution.txt");  // Save after multi-route swap
 
         // Integrate the outsourced_neighborhood
         Solution outsourced_improved_solution = outsourced_neighborhood(data, solution);
-        std::cout << "\n\n\n\nSolução após vizinhança por terceirização:" << std::endl;
+        std::cout << "\n\n\n\nSolution after outsourced neighborhood:" << std::endl;
         printSolution(outsourced_improved_solution);
+        saveSolutionToFile(outsourced_improved_solution, outputPath + baseFilename + "_outsourced_solution.txt");  // Save after outsourced neighborhood
 
         Solution vnd_solution = vnd(data, solution);
-        std::cout << "\n\n\n\nSolução após VND:" << std::endl;
+        std::cout << "\n\n\n\nSolution after VND:" << std::endl;
         printSolution(vnd_solution);
+        saveSolutionToFile(vnd_solution, outputPath + baseFilename + "_vnd_solution.txt");  // Save after VND
 
         std::cout << "Done processing file: " << path.string() << "\n\n" << std::endl;
-        int temp;
-        std::cin >> temp;
+        // int temp;
+        // std::cin >> temp;
     }
 
     return 0;
