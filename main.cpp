@@ -194,10 +194,26 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
 
     // Função auxiliar para calcular o custo da rota
     auto calculate_route_cost = [&data](const std::vector<int>& route) {
+        if (route.empty()) {
+            // std::cout << "Rota vazia! Retornando custo 0." << std::endl;
+            return 0;
+        }
+
         int cost = 0;
 
+        // std::cout << "Calculando custo da rota: ";
+        // for (int loc : route) {
+        //     std::cout << loc << " ";
+        // }
+        // std::cout << std::endl;
+
         for (size_t i = 0; i < route.size() - 1; ++i) {
-            cost += data.c[route[i]][route[i+1]];
+            // std::cout << "Entrou for \n";
+            if (route[i] < 0 || route[i] >= data.c.size() || route[i+1] < 0 || route[i+1] >= data.c[route[i]].size()) {
+                // std::cout << "Erro de acesso! Índices fora do limite: " << route[i] << ", " << route[i+1] << std::endl;
+            } else {
+                cost += data.c[route[i]][route[i+1]];
+            }
         }
 
         return cost;
@@ -212,8 +228,13 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
 
             // std::cout << "Verificando rota do veículo " << v << " com custo inicial: " << current_route_cost << std::endl;
 
+            if (current_route.size() < 2) {
+                // std::cout << "Rota muito curta para realizar trocas." << std::endl;
+                continue;
+            }
+
             for (size_t i = 0; i < current_route.size() - 1; ++i) { 
-                for (size_t j = i+1; j < current_route.size() - 1; ++j) {
+                for (size_t j = i+1; j < current_route.size(); ++j) {
                     // Troca temporariamente as posições dos itens i e j
                     std::swap(current_route[i], current_route[j]);
 
@@ -397,36 +418,36 @@ Solution vnd(const Data& data, Solution initial_solution) {
     
     int k = 0;
     while (k < 3) {
-        std::cout << "Current neighborhood index: " << k << std::endl;
+        // std::cout << "Current neighborhood index: " << k << std::endl;
         switch(k) {
             case 0:
-                std::cout << "Applying swap_neighborhood..." << std::endl;
+                // std::cout << "Applying swap_neighborhood..." << std::endl;
                 current_solution = swap_neighborhood(data, current_solution);
-                std::cout << "New total cost after swap_neighborhood: " << current_solution.custoTotal << std::endl;
+                // std::cout << "New total cost after swap_neighborhood: " << current_solution.custoTotal << std::endl;
                 break;
             case 1:
-                std::cout << "Applying multi_route_swap_neighborhood..." << std::endl;
+                // std::cout << "Applying multi_route_swap_neighborhood..." << std::endl;
                 current_solution = multi_route_swap_neighborhood(data, current_solution);
-                std::cout << "New total cost after multi_route_swap_neighborhood: " << current_solution.custoTotal << std::endl;
+                // std::cout << "New total cost after multi_route_swap_neighborhood: " << current_solution.custoTotal << std::endl;
                 break;
             case 2:
-                std::cout << "Applying outsourced_neighborhood..." << std::endl;
+                // std::cout << "Applying outsourced_neighborhood..." << std::endl;
                 current_solution = outsourced_neighborhood(data, current_solution);
-                std::cout << "New total cost after outsourced_neighborhood: " << current_solution.custoTotal << std::endl;
+                // std::cout << "New total cost after outsourced_neighborhood: " << current_solution.custoTotal << std::endl;
                 break;
         }
 
         if (current_solution.custoTotal < best_solution.custoTotal) {
-            std::cout << "Found a better solution! Updating best_solution and resetting neighborhood index." << std::endl;
+            // std::cout << "Found a better solution! Updating best_solution and resetting neighborhood index." << std::endl;
             best_solution = current_solution;
             k = 0; // reinicia o índice da vizinhança se houver melhora
         } else {
-            std::cout << "No improvement found. Moving to the next neighborhood." << std::endl;
+            // std::cout << "No improvement found. Moving to the next neighborhood." << std::endl;
             ++k; // vai para a próxima vizinhança
         }
     }
 
-    std::cout << "VND finished. Best solution cost: " << best_solution.custoTotal << std::endl;
+    // std::cout << "VND finished. Best solution cost: " << best_solution.custoTotal << std::endl;
     return best_solution;
 }
 
@@ -541,6 +562,7 @@ int main() {
         Solution solution = greedy_solution(data);
         printSolution(solution);
 
+        std::cout << "\n\n\n\nEntrando vizinhança por troca:" << std::endl;
         Solution improved_solution = swap_neighborhood(data, solution);
         std::cout << "\n\n\n\nSolução após vizinhança por troca:" << std::endl;
         printSolution(improved_solution);
@@ -560,6 +582,8 @@ int main() {
         printSolution(vnd_solution);
 
         std::cout << "Done processing file: " << path.string() << "\n\n" << std::endl;
+        int temp;
+        std::cin >> temp;
     }
 
     return 0;
