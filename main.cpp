@@ -4,6 +4,9 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 bool areAllZeroes(const std::vector<int>& v) {
     return std::all_of(v.begin(), v.end(), [](int i) {
@@ -488,53 +491,76 @@ void printSolution(const Solution& sol) {
 }
 
 int main() {
-    Data data = readFile("input2.txt");
+    // Define the directory containing the input files
+    std::string directory_path = "./instancias";
 
-    // Output the variables and arrays/matrices to verify they were read correctly
-    std::cout << "n: " << data.n << "\nk: " << data.k << "\nQ: " << data.Q 
-              << "\nL: " << data.L << "\nr: " << data.r << std::endl;
-
-    std::cout << "\nd: ";
-    for(int i : data.d) {
-        std::cout << i << " ";
+    // Check if the directory exists
+    if (!fs::exists(directory_path) || !fs::is_directory(directory_path)) {
+        std::cerr << "Error: Directory does not exist or is not a directory: " << directory_path << std::endl;
+        return EXIT_FAILURE;
     }
 
-    std::cout << "\np: ";
-    for(int i : data.p) {
-        std::cout << i << " ";
-    }
+    // Iterate over all the files in the directory
+    for (const auto& entry : fs::directory_iterator(directory_path)) {
+        const auto& path = entry.path();
+        const auto& filename = path.filename().string();
 
-    std::cout << std::endl << "\nc: " << std::endl;
-    for(int i = 0; i < (data.n + 1); i++) {
-        for(int j = 0; j < (data.n + 1); j++) {
-            std::cout << data.c[i][j] << " ";
+        // Skip .DS_Store files
+        if (filename == ".DS_Store") {
+            continue;
         }
-        std::cout << std::endl;
+
+        std::cout << "Processing file: " << path << std::endl;
+
+        // Read data from file
+        Data data = readFile(path.string());
+
+        // Output the variables and arrays/matrices to verify they were read correctly
+        std::cout << "n: " << data.n << "\nk: " << data.k << "\nQ: " << data.Q 
+                << "\nL: " << data.L << "\nr: " << data.r << std::endl;
+
+        std::cout << "\nd: ";
+        for(int i : data.d) {
+            std::cout << i << " ";
+        }
+
+        std::cout << "\np: ";
+        for(int i : data.p) {
+            std::cout << i << " ";
+        }
+
+        std::cout << std::endl << "\nc: " << std::endl;
+        for(int i = 0; i < (data.n + 1); i++) {
+            for(int j = 0; j < (data.n + 1); j++) {
+                std::cout << data.c[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        // Apply algorithms and print solutions
+        Solution solution = greedy_solution(data);
+        printSolution(solution);
+
+        Solution improved_solution = swap_neighborhood(data, solution);
+        std::cout << "\n\n\n\nSolução após vizinhança por troca:" << std::endl;
+        printSolution(improved_solution);
+
+        // Integrate the multi_route_swap_neighborhood
+        Solution multi_route_improved_solution = multi_route_swap_neighborhood(data, solution);
+        std::cout << "\n\n\n\nSolução após vizinhança multi-route swap:" << std::endl;
+        printSolution(multi_route_improved_solution);
+
+        // Integrate the outsourced_neighborhood
+        Solution outsourced_improved_solution = outsourced_neighborhood(data, solution);
+        std::cout << "\n\n\n\nSolução após vizinhança por terceirização:" << std::endl;
+        printSolution(outsourced_improved_solution);
+
+        Solution vnd_solution = vnd(data, solution);
+        std::cout << "\n\n\n\nSolução após VND:" << std::endl;
+        printSolution(vnd_solution);
+
+        std::cout << "Done processing file: " << path.string() << "\n\n" << std::endl;
     }
-
-    Solution solution = greedy_solution(data);
-    printSolution(solution);
-
-    std::cout << "\n\n\n\n" << std::endl;
-    Solution improved_solution = swap_neighborhood(data, solution);
-    std::cout << "\n\n\n\nSolução após vizinhança por troca:" << std::endl;
-    printSolution(improved_solution);
-
-    // Integrate the multi_route_swap_neighborhood
-    std::cout << "\n\n\n\n" << std::endl;
-    Solution multi_route_improved_solution = multi_route_swap_neighborhood(data, solution);
-    std::cout << "\n\n\n\nSolução após vizinhança multi-route swap:" << std::endl;
-    printSolution(multi_route_improved_solution);
-
-    // Integrate the outsourced_neighborhood
-    std::cout << "\n\n\n\n" << std::endl;
-    Solution outsourced_improved_solution = outsourced_neighborhood(data, solution);
-    std::cout << "\n\n\n\nSolução após vizinhança por terceirização:" << std::endl;
-    printSolution(outsourced_improved_solution);
-
-    Solution vnd_solution = vnd(data, solution);
-    std::cout << "\n\n\n\nSolução após VND:" << std::endl;
-    printSolution(vnd_solution);
 
     return 0;
 }
