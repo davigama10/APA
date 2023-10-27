@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <numeric>
 #include <filesystem>
+#include <chrono> 
 
 namespace fs = std::filesystem;
 
@@ -538,7 +539,30 @@ void saveSolutionToFile(const Solution& sol, const std::string& filename) {
     outfile.close();
 }
 
+void saveGreedyRuntimeToFile(const std::string& filename, double runtime) {
+    std::ofstream outfile("greedy_runtimes.txt", std::ios::app); // Open in append mode
+    outfile << std::fixed << std::setprecision(10); // Use fixed-point notation with 10 decimal places
+    
+    std::string baseFilename = filename.substr(0, filename.size() - 4);  // Remove .txt from filename
+    outfile << baseFilename << ": " << runtime << "\n";
+    
+    outfile.close();
+}
+
+void saveVNDRuntimeToFile(const std::string& filename, double runtime) {
+    std::ofstream outfile("vnd_runtimes.txt", std::ios::app); // Open in append mode
+    outfile << std::fixed << std::setprecision(10); // Use fixed-point notation with 10 decimal places
+    
+    std::string baseFilename = filename.substr(0, filename.size() - 4);  // Remove .txt from filename
+    outfile << baseFilename << ": " << runtime << "\n";
+    
+    outfile.close();
+}
+
 int main() {
+    std::ofstream("greedy_runtimes.txt").close();
+    std::ofstream("vnd_runtimes.txt").close();  
+
     // Define the directory containing the input files
     std::string directory_path = "./instancias";
 
@@ -571,7 +595,11 @@ int main() {
         std::string baseFilename = filename.substr(0, filename.find(".txt"));  // Remove .txt from filename
         std::string outputPath = "./output/";  // Define the output directory
 
+        auto greedy_start = std::chrono::high_resolution_clock::now(); // Start timer
         Solution solution = greedy_solution(data);
+        auto greedy_end = std::chrono::high_resolution_clock::now(); // End timer
+        double greedy_runtime = std::chrono::duration<double, std::milli>(greedy_end - greedy_start).count() / 1000.0; // Runtime in seconds
+        saveGreedyRuntimeToFile(filename, greedy_runtime);
         printSolution(solution);
         saveSolutionToFile(solution, outputPath + baseFilename + "_greedy_solution.txt");  // Save the greedy solution
 
@@ -593,14 +621,18 @@ int main() {
         printSolution(outsourced_improved_solution);
         saveSolutionToFile(outsourced_improved_solution, outputPath + baseFilename + "_outsourced_solution.txt");  // Save after outsourced neighborhood
 
+        auto vnd_start = std::chrono::high_resolution_clock::now(); // Start timer
         Solution vnd_solution = vnd(data, solution);
+        auto vnd_end = std::chrono::high_resolution_clock::now(); // End timer
+        double vnd_runtime = std::chrono::duration<double, std::milli>(vnd_end - vnd_start).count() / 1000.0; // Runtime in seconds
+        saveVNDRuntimeToFile(filename, vnd_runtime);
         std::cout << "\n\n\n\nSolution after VND:" << std::endl;
         printSolution(vnd_solution);
         saveSolutionToFile(vnd_solution, outputPath + baseFilename + "_vnd_solution.txt");  // Save after VND
 
         std::cout << "Done processing file: " << path.string() << "\n\n" << std::endl;
-        int temp;
-        std::cin >> temp;
+        // int temp;
+        // std::cin >> temp;
     }
 
     return 0;
