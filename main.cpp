@@ -574,7 +574,6 @@ int main() {
         std::string baseFilename = filename.substr(0, filename.find(".txt"));  // Remove .txt do nome do arquivo
         std::string outputPath = "./output/";  // Define o diretório de saída
 
-        std::cout << "1" << std::endl;
         auto greedy_start = std::chrono::high_resolution_clock::now(); // Inicia o cronômetro
         Solution solution = greedy_solution(data);
         auto greedy_end = std::chrono::high_resolution_clock::now(); // Termina o cronômetro
@@ -583,7 +582,6 @@ int main() {
         printSolution(solution);
         saveSolutionToFile(solution, outputPath + baseFilename + "_greedy_solution.txt");  // Salva a solução gulosa em arquivo
 
-        std::cout << "2" << std::endl;
         auto vnd_start = std::chrono::high_resolution_clock::now(); // Inicia o cronômetro
         solution = vnd(data, solution);
         auto vnd_end = std::chrono::high_resolution_clock::now(); // Termina o cronômetro
