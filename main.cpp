@@ -233,8 +233,10 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
                 continue;
             }
 
-            for (size_t i = 0; i < current_route.size() - 1; ++i) { 
-                for (size_t j = i+1; j < current_route.size(); ++j) {
+            // std::cout << "current_route.size(): " << current_route.size() << std::endl;
+            // std::cin >> improvement_found;
+            for (size_t i = 1; i < current_route.size() - 2; ++i) { 
+                for (size_t j = i+1; j < current_route.size() - 2; ++j) {
                     // Troca temporariamente as posições dos itens i e j
                     std::swap(current_route[i], current_route[j]);
 
@@ -597,8 +599,8 @@ int main() {
         saveSolutionToFile(vnd_solution, outputPath + baseFilename + "_vnd_solution.txt");  // Save after VND
 
         std::cout << "Done processing file: " << path.string() << "\n\n" << std::endl;
-        // int temp;
-        // std::cin >> temp;
+        int temp;
+        std::cin >> temp;
     }
 
     return 0;
