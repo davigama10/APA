@@ -58,13 +58,13 @@ Solution greedy_solution(Data& data) {
 
                 auto it = std::find(posicoesPercorridas.begin(), posicoesPercorridas.end(), j);
                 
-                // std::cout << "Positions traversed: ";
+                // std::cout << Posicoes percorridas: ";
                 // for(int pos : posicoesPercorridas) {
                 //     std::cout << pos << " ";
                 // }
 
                 // std::cout << std::endl;
-                // std::cout << "procurando: " << j << std::endl;
+                // std::cout << "Procurando: " << j << std::endl;
 
                 // j atual nao esta em posicoesPercorridas
                 if (it == posicoesPercorridas.end()) {
@@ -269,21 +269,19 @@ Solution swap_neighborhood(const Data& data, const Solution& initial_solution) {
 Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial_solution) {
     Solution best_solution = initial_solution;
 
-    bool improvement_found = true; // flag para continuar buscando melhorias
+    bool improvement_found = true; // Flag para continuar buscando melhorias
 
     // Função auxiliar para calcular o custo da rota
     auto calculate_route_cost = [&data](const std::vector<int>& route) {
         int cost = 0;
-
         for (size_t i = 0; i < route.size() - 1; ++i) {
             cost += data.c[route[i]][route[i+1]];
         }
-
         return cost;
     };
 
     while (improvement_found) {
-        improvement_found = false; // reseta a flag para cada iteração
+        improvement_found = false; // Reseta a flag para cada iteração
 
         for (size_t v1 = 0; v1 < best_solution.rotaPorVeiculo.size(); ++v1) {
             for (size_t v2 = 0; v2 < best_solution.rotaPorVeiculo.size(); ++v2) {
@@ -296,9 +294,6 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
                             int prev_route1_cost = calculate_route_cost(current_route1);
                             int prev_route2_cost = calculate_route_cost(current_route2);
 
-                            // std::cout << "Verificando troca entre veículo " << v1 << " na posição " << i << " e veículo " << v2 << " na posição " << j << std::endl;
-                            // std::cout << "Custos anteriores: Rota1: " << prev_route1_cost << ", Rota2: " << prev_route2_cost << std::endl;
-
                             // Troca temporariamente os itens entre as rotas
                             if (current_route1[i] != 0 && current_route2[j] != 0) {
                                 std::swap(current_route1[i], current_route2[j]);
@@ -306,18 +301,13 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
                                 int new_route1_cost = calculate_route_cost(current_route1);
                                 int new_route2_cost = calculate_route_cost(current_route2);
 
-                                // std::cout << "Novos custos após a troca: Rota1: " << new_route1_cost << ", Rota2: " << new_route2_cost << std::endl;
-
                                 // Se a troca resulta em um custo menor, atualiza a solução
                                 if (new_route1_cost + new_route2_cost < prev_route1_cost + prev_route2_cost) {
-                                    // std::cout << "A troca melhorou o custo! Atualizando a solução." << std::endl;
                                     best_solution.rotaPorVeiculo[v1] = current_route1;
                                     best_solution.rotaPorVeiculo[v2] = current_route2;
                                     best_solution.custoRoteamento += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
                                     best_solution.custoTotal += new_route1_cost + new_route2_cost - prev_route1_cost - prev_route2_cost;
-                                    improvement_found = true; // indica que foi encontrada uma melhoria
-                                } else {
-                                    // std::cout << "A troca não melhorou o custo. Desfazendo." << std::endl;
+                                    improvement_found = true; // Indica que foi encontrada uma melhoria
                                 }
                             }
                         }
@@ -326,8 +316,6 @@ Solution multi_route_swap_neighborhood(const Data& data, const Solution& initial
             }
         }
     }
-
-    // std::cout << "Custo da solução final após aplicar multi-route swap: " << best_solution.custoTotal << std::endl;
 
     return best_solution;
 }
@@ -341,11 +329,9 @@ Solution outsourced_neighborhood(const Data& data, const Solution& initial_solut
     // Função auxiliar para calcular o custo da rota
     auto calculate_route_cost = [&data](const std::vector<int>& route) {
         int cost = 0;
-
         for (size_t i = 0; i < route.size() - 1; ++i) {
             cost += data.c[route[i]][route[i+1]];
         }
-        
         return cost;
     };
 
@@ -360,10 +346,10 @@ Solution outsourced_neighborhood(const Data& data, const Solution& initial_solut
             }
 
             int route_cost_with_current = calculate_route_cost(best_solution.rotaPorVeiculo[v]);
-            
+
             best_solution.rotaPorVeiculo[v].erase(best_solution.rotaPorVeiculo[v].begin() + i);
             int route_cost_without_current = calculate_route_cost(best_solution.rotaPorVeiculo[v]);
-            
+
             // Se a terceirização é mais barata
             if (route_cost_without_current + data.p[current_location - 1] < route_cost_with_current) {
                 best_solution.terceirizados.push_back(current_location);
@@ -379,14 +365,14 @@ Solution outsourced_neighborhood(const Data& data, const Solution& initial_solut
     // Verificar se as entregas terceirizadas podem ser incorporadas de volta na rota
     for (int terc : best_solution.terceirizados) {
         int current_cost_with_terceirized = data.p[terc - 1];
-        
+
         int best_route_cost = 999999;
         size_t best_v = 0;
 
         for (size_t v = 0; v < best_solution.rotaPorVeiculo.size(); ++v) {
             std::vector<int> tmp_route = best_solution.rotaPorVeiculo[v];
             tmp_route.push_back(terc);
-            
+
             int route_cost = calculate_route_cost(tmp_route);
             if (route_cost < best_route_cost) {
                 best_route_cost = route_cost;
@@ -418,47 +404,40 @@ Solution outsourced_neighborhood(const Data& data, const Solution& initial_solut
 Solution vnd(const Data& data, Solution initial_solution) {
     Solution best_solution = initial_solution;
     Solution current_solution = initial_solution;
-    
+
     int k = 0;
     while (k < 3) {
-        // std::cout << "Current neighborhood index: " << k << std::endl;
         switch(k) {
             case 0:
-                // std::cout << "Applying swap_neighborhood..." << std::endl;
-                current_solution = swap_neighborhood(data, current_solution);
-                // std::cout << "New total cost after swap_neighborhood: " << current_solution.custoTotal << std::endl;
+                // std::cout << "vnd 1" << std::endl;
+                current_solution = swap_neighborhood(data, best_solution);
                 break;
             case 1:
-                // std::cout << "Applying multi_route_swap_neighborhood..." << std::endl;
-                current_solution = multi_route_swap_neighborhood(data, current_solution);
-                // std::cout << "New total cost after multi_route_swap_neighborhood: " << current_solution.custoTotal << std::endl;
+                // std::cout << "vnd 2" << std::endl;
+                current_solution = multi_route_swap_neighborhood(data, best_solution);
                 break;
             case 2:
-                // std::cout << "Applying outsourced_neighborhood..." << std::endl;
-                current_solution = outsourced_neighborhood(data, current_solution);
-                // std::cout << "New total cost after outsourced_neighborhood: " << current_solution.custoTotal << std::endl;
+                // std::cout << "vnd 3" << std::endl;
+                current_solution = outsourced_neighborhood(data, best_solution);
                 break;
         }
 
         if (current_solution.custoTotal < best_solution.custoTotal) {
-            // std::cout << "Found a better solution! Updating best_solution and resetting neighborhood index." << std::endl;
             best_solution = current_solution;
-            k = 0; // reinicia o índice da vizinhança se houver melhora
+            k = 0;
         } else {
-            // std::cout << "No improvement found. Moving to the next neighborhood." << std::endl;
-            ++k; // vai para a próxima vizinhança
+            k++;
         }
     }
 
-    // std::cout << "VND finished. Best solution cost: " << best_solution.custoTotal << std::endl;
     return best_solution;
 }
 
 Data readFile(const std::string& filename) {
     std::ifstream file(filename); 
     if(!file) {
-        std::cerr << "Could not open the file!" << std::endl;
-        exit(EXIT_FAILURE); // Exiting because we can't return any meaningful data
+        std::cerr << "Não foi possível abrir o arquivo!" << std::endl;
+        exit(EXIT_FAILURE); // Saindo porque não podemos retornar dados significativos
     }
 
     Data data;
@@ -476,11 +455,11 @@ Data readFile(const std::string& filename) {
     }
 
     data.c.resize(data.n + 1, std::vector<int>(data.n + 1));
-    // std::cout << "printing n: " << data.n << std::endl;
+    // std::cout << "imprimindo n: " << data.n << std::endl;
     for(int i = 0; i < (data.n + 1); ++i) {
-        // std::cout << "printing i: " << i << std::endl;
+        // std::cout << "imprimindo i: " << i << std::endl;
         for(int j = 0; j < (data.n + 1); ++j) {
-            // std::cout << "printing j: " << j << std::endl;
+            // std::cout << "imprimindo j: " << j << std::endl;
             file >> data.c[i][j];
             // std::cout << "data.c[" << i << "][" << j << "]: " <<  data.c[i][j] << std::endl;
         }
@@ -517,7 +496,7 @@ void printSolution(const Solution& sol) {
 void saveSolutionToFile(const Solution& sol, const std::string& filename) {
     std::ofstream outfile(filename);
 
-    // Write the solution details to the file
+    // Escreve os detalhes da solução no arquivo
     outfile << sol.custoTotal << "\n";
     outfile << sol.custoRoteamento << "\n";
     outfile << sol.custoUtilizacaoVeiculos << "\n";
@@ -540,100 +519,81 @@ void saveSolutionToFile(const Solution& sol, const std::string& filename) {
 }
 
 void saveGreedyRuntimeToFile(const std::string& filename, double runtime) {
-    std::ofstream outfile("greedy_runtimes.txt", std::ios::app); // Open in append mode
-    outfile << std::fixed << std::setprecision(10); // Use fixed-point notation with 10 decimal places
+    std::ofstream outfile("guloso_tempo_execucao.txt", std::ios::app); // Abrir em modo de anexar
+    outfile << std::fixed << std::setprecision(10); // Usar notação de ponto fixo com 10 casas decimais
     
-    std::string baseFilename = filename.substr(0, filename.size() - 4);  // Remove .txt from filename
+    std::string baseFilename = filename.substr(0, filename.size() - 4);  // Remove .txt do nome do arquivo
     outfile << baseFilename << ": " << runtime << "\n";
     
     outfile.close();
 }
 
 void saveVNDRuntimeToFile(const std::string& filename, double runtime) {
-    std::ofstream outfile("vnd_runtimes.txt", std::ios::app); // Open in append mode
-    outfile << std::fixed << std::setprecision(10); // Use fixed-point notation with 10 decimal places
+    std::ofstream outfile("vnd_tempo_execucao.txt", std::ios::app); // Abrir em modo de anexar
+    outfile << std::fixed << std::setprecision(10); // Usar notação de ponto fixo com 10 casas decimais
     
-    std::string baseFilename = filename.substr(0, filename.size() - 4);  // Remove .txt from filename
+    std::string baseFilename = filename.substr(0, filename.size() - 4);  // Remove .txt do nome do arquivo
     outfile << baseFilename << ": " << runtime << "\n";
     
     outfile.close();
 }
 
 int main() {
-    std::ofstream("greedy_runtimes.txt").close();
-    std::ofstream("vnd_runtimes.txt").close();  
+    std::ofstream("guloso_tempo_execucao.txt").close();
+    std::ofstream("vnd_tempo_execucao.txt").close();  
 
-    // Define the directory containing the input files
+    // Define o diretório contendo os arquivos de entrada
     std::string directory_path = "./instancias";
 
-    // Check if the directory exists
+    // Verifica se o diretório existe
     if (!fs::exists(directory_path) || !fs::is_directory(directory_path)) {
-        std::cerr << "Error: Directory does not exist or is not a directory: " << directory_path << std::endl;
+        std::cerr << "Erro: Diretório não existe ou não é um diretório: " << directory_path << std::endl;
         return EXIT_FAILURE;
     }
 
-    // Iterate over all the files in the directory
+    // Itera sobre todos os arquivos no diretório
     for (const auto& entry : fs::directory_iterator(directory_path)) {
         const auto& path = entry.path();
         const auto& filename = path.filename().string();
 
-        // Skip .DS_Store files
+        // Pula arquivos .DS_Store
         if (filename == ".DS_Store") {
             continue;
         }
 
-        // Debugging line, remove in final code
+        // Linha de depuração, remover no código final
         // if (filename != "n9k5_A.txt") {
         //     continue;
         // }
 
-        std::cout << "Processing file: " << path << std::endl;
+        std::cout << "Processando arquivo: " << path << std::endl;
 
-        // Read data from file
+        // Lê dados do arquivo
         Data data = readFile(path.string());
 
-        std::string baseFilename = filename.substr(0, filename.find(".txt"));  // Remove .txt from filename
-        std::string outputPath = "./output/";  // Define the output directory
+        std::string baseFilename = filename.substr(0, filename.find(".txt"));  // Remove .txt do nome do arquivo
+        std::string outputPath = "./output/";  // Define o diretório de saída
 
-        auto greedy_start = std::chrono::high_resolution_clock::now(); // Start timer
+        std::cout << "1" << std::endl;
+        auto greedy_start = std::chrono::high_resolution_clock::now(); // Inicia o cronômetro
         Solution solution = greedy_solution(data);
-        auto greedy_end = std::chrono::high_resolution_clock::now(); // End timer
-        double greedy_runtime = std::chrono::duration<double, std::milli>(greedy_end - greedy_start).count() / 1000.0; // Runtime in seconds
+        auto greedy_end = std::chrono::high_resolution_clock::now(); // Termina o cronômetro
+        double greedy_runtime = std::chrono::duration<double, std::milli>(greedy_end - greedy_start).count() / 1000.0; // Tempo de execução em segundos
         saveGreedyRuntimeToFile(filename, greedy_runtime);
         printSolution(solution);
-        saveSolutionToFile(solution, outputPath + baseFilename + "_greedy_solution.txt");  // Save the greedy solution
+        saveSolutionToFile(solution, outputPath + baseFilename + "_greedy_solution.txt");  // Salva a solução gulosa em arquivo
 
-        std::cout << "\n\n\n\nEntering swap neighborhood:" << std::endl;
-        Solution improved_solution = swap_neighborhood(data, solution);
-        std::cout << "\n\n\n\nSolution after swap neighborhood:" << std::endl;
-        printSolution(improved_solution);
-        saveSolutionToFile(improved_solution, outputPath + baseFilename + "_swap_neighborhood_solution.txt");  // Save after swap neighborhood
-
-        // Integrate the multi_route_swap_neighborhood
-        Solution multi_route_improved_solution = multi_route_swap_neighborhood(data, solution);
-        std::cout << "\n\n\n\nSolution after multi-route swap neighborhood:" << std::endl;
-        printSolution(multi_route_improved_solution);
-        saveSolutionToFile(multi_route_improved_solution, outputPath + baseFilename + "_multi_route_swap_solution.txt");  // Save after multi-route swap
-
-        // Integrate the outsourced_neighborhood
-        Solution outsourced_improved_solution = outsourced_neighborhood(data, solution);
-        std::cout << "\n\n\n\nSolution after outsourced neighborhood:" << std::endl;
-        printSolution(outsourced_improved_solution);
-        saveSolutionToFile(outsourced_improved_solution, outputPath + baseFilename + "_outsourced_solution.txt");  // Save after outsourced neighborhood
-
-        auto vnd_start = std::chrono::high_resolution_clock::now(); // Start timer
-        Solution vnd_solution = vnd(data, solution);
-        auto vnd_end = std::chrono::high_resolution_clock::now(); // End timer
-        double vnd_runtime = std::chrono::duration<double, std::milli>(vnd_end - vnd_start).count() / 1000.0; // Runtime in seconds
+        std::cout << "2" << std::endl;
+        auto vnd_start = std::chrono::high_resolution_clock::now(); // Inicia o cronômetro
+        solution = vnd(data, solution);
+        auto vnd_end = std::chrono::high_resolution_clock::now(); // Termina o cronômetro
+        double vnd_runtime = std::chrono::duration<double, std::milli>(vnd_end - vnd_start).count() / 1000.0; // Tempo de execução em segundos
         saveVNDRuntimeToFile(filename, vnd_runtime);
-        std::cout << "\n\n\n\nSolution after VND:" << std::endl;
-        printSolution(vnd_solution);
-        saveSolutionToFile(vnd_solution, outputPath + baseFilename + "_vnd_solution.txt");  // Save after VND
-
-        std::cout << "Done processing file: " << path.string() << "\n\n" << std::endl;
-        // int temp;
-        // std::cin >> temp;
+        printSolution(solution);
+        saveSolutionToFile(solution, outputPath + baseFilename + "_vnd_solution.txt");  // Salva a solução VND em arquivo
     }
 
-    return 0;
+    std::cout << "Processamento concluído!" << std::endl;
+
+    return EXIT_SUCCESS;
 }
